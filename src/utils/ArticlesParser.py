@@ -61,9 +61,9 @@ def parse_wiki_article(text):
         # and end with either of .!?) symbols
         if len(paragraph_lines) == 0 or \
            not re.match(r'^[a-zA-ZÀ-ÖØ-Þ0-9\W]', paragraph_lines[0]) or \
-           not re.match(r'.*[.!?)\"\n]$', paragraph_lines[-1]):
+           not re.match(r'.*(?:[.!?\"\n]|\.\))$', paragraph_lines[-1]):
             continue
-            
+
         # Check if there is any line break that shouldn't ha ppen
         is_fake_paragraph = False
 
@@ -107,70 +107,52 @@ def process_articles_directory(directory_path):
     return results
 
 def remove_duplicates_and_enlarge(lines):
-    # Count the occurrences of each line
     line_counts = Counter(lines)
-    lines = [line for line in lines if line_counts[line] == 1 and line != 'Enlarge']
-    # Only keep lines that appear exactly once
-    return lines
+    filtered_lines = [line for line in lines if line_counts[line] == 1]
+    print(filtered_lines)
+    patterns_to_remove = [r'This is a featured article. Click here for more information.',
+                       r'The references in this articles*?page for further details.',
+                       r'Enlarge',
+                       r'Infobox last updated on:*?.']
+    combined_pattern = re.compile('|'.join(patterns_to_remove), re.IGNORECASE | re.DOTALL)
+    full_text = ' '.join(filtered_lines)
+    
+    # Remove unwanted patterns
+    cleaned_text = combined_pattern.sub('', full_text)
+    cleaned_lines = [line for line in filtered_lines if line in cleaned_text]
+    print(cleaned_lines)
+    return cleaned_lines
 
 # Example usage
 if __name__ == "__main__":
     # Test with a sample that has section structure
     sample_text = """   #copyright
 
-Finance
+Driving on the left or right
 
-2007 Schools Wikipedia Selection. Related subjects: Economics
+2007 Schools Wikipedia Selection. Related subjects: Road transport
 
-   Finance
+   The references in this article would be clearer with a different and/or
+   consistent style of citation, footnoting or external linking. Please
+   see the relevant discussion on the talk page for further details.
+   ██ drive on right██ drive on left
+   Enlarge
+   ██ drive on right██ drive on left
 
-   Finance Overview
-   Capital
-   Investment
-   Cash flow
-   Credit
-   Debt
-   Funding
-   Hedging
-   Interest
-   Risk
-   Yield
-   Arbitrage
+   Keeping to either the left or the right prevents vehicles moving in
+   opposite directions from colliding with each other. This is so
+   fundamental that it is sometimes known simply as the rule of the road.
+   About 34% of the world by population drives on the left, and 66% keeps
+   right. By roadway distances, about 28% drive on the left, and 72% on
+   the right.
 
-   Types of Finance
-   Corporate finance
-   Personal finance
-   Public finance
+   In more sophisticated systems such as large cities, this concept is
+   further extended: some streets are marked as being one-way, and on
+   those streets all traffic must flow in only one direction. A driver
+   wishing to reach a destination already passed must use other streets in
+   order to return.
 
-   Asset Types
-   Real Estate
-   Securities
-   Commodities
-   Futures
-
-   Financial Vehicles
-   Collective Investment Schemes
-   Trusts
-
-   See Also
-   Entrepreneur
-   Financial market
-   Insurance
-   Economy
-                   edit this box
-
-   Finance studies and addresses the ways in which individuals, businesses,
-   and organizations raise, allocate, and use monetary resources over
-   time, taking into account the risks entailed in their projects.
-   
-   The term finance may thus incorporate any of the following:
-     * The study of money and other assets
-     * The management and control of those assets
-     * Profiling and managing project risks
-     * As a verb, "to finance" is to provide funds for business.
-
-Examples of some basic financial concepts
-"""
+History"""
 
     title, subjects, para = parse_wiki_article(sample_text)
     print(f"Title: {title}")

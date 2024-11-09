@@ -7,70 +7,70 @@ Acetic acid
 
    This is a featured article. Click here for more information.
 
-                             Acetic acid
-                      Acetic acid Acetic acid
-                               General
-     Systematic name                                      Acetic acid
-                                                        Ethanoic acid
-         Other names               Methanecarboxylic acid
-                                   Acetyl hydroxide (AcOH)
-                                               Hydrogen acetate (HAc)
-   Molecular formula                        C[2]H[4]O[2] or CH[3]COOH
-              SMILES                                          CC(=O)O
-          Molar mass                                   60.05 g mol^−1
-          Appearance                                Colourless liquid
-                                                          or crystals
-          CAS number                                        [64-19-7]
-                             Properties
-   Density and phase                          1.049 g cm^−3, liquid
-                                                 1.266 g cm^−3, solid
- Solubility in water                                   Fully miscible
- In ethanol, acetone
-  In toluene, hexane
- In carbon disulfide               Fully miscible
-                                         Fully miscible
-                                                Practically insoluble
-       Melting point                        16.7°C (289.9 K) (62.1°F)
-       Boiling point                     118.1°C (391.2 4K) (244.6°F)
-     Acidity (pK[a])                                     4.76 at 25°C
-           Viscosity                               1.22 mPa·s at 25°C
-       Dipole moment                                     1.74 D (gas)
-                               Hazards
-                MSDS                                    External MSDS
-   EU classification                                    Corrosive (C)
-            NFPA 704
+                              Acetic acid
+                        Acetic acid Acetic acid
+                                 General
+      Systematic name                                      Acetic acid
+                                                         Ethanoic acid
+            Other names               Methanecarboxylic acid
+                                    Acetyl hydroxide (AcOH)
+                                                Hydrogen acetate (HAc)
+      Molecular formula                        C[2]H[4]O[2] or CH[3]COOH
+               SMILES                                          CC(=O)O
+            Molar mass                                   60.05 g mol^−1
+            Appearance                                Colourless liquid
+                                                            or crystals
+            CAS number                                        [64-19-7]
+                              Properties
+      Density and phase                          1.049 g cm^−3, liquid
+                                                   1.266 g cm^−3, solid
+   Solubility in water                                   Fully miscible
+   In ethanol, acetone
+   In toluene, hexane
+   In carbon disulfide               Fully miscible
+                                          Fully miscible
+                                                   Practically insoluble
+         Melting point                        16.7°C (289.9 K) (62.1°F)
+         Boiling point                     118.1°C (391.2 4K) (244.6°F)
+      Acidity (pK[a])                                     4.76 at 25°C
+            Viscosity                               1.22 mPa·s at 25°C
+         Dipole moment                                     1.74 D (gas)
+                                 Hazards
+                  MSDS                                    External MSDS
+      EU classification                                    Corrosive (C)
+               NFPA 704
 
-                     2
-                     2
-                     0
+                        2
+                        2
+                        0
 
-         Flash point                                             43°C
-           R-phrases                                         R10, R35
-           S-phrases                              S1/2, S23, S26, S45
-    U.S. Permissible
-exposure limit (PEL)                                           10 ppm
-                       Supplementary data page
-           Structure
-        & properties                                    n, ε[r], etc.
-       Thermodynamic
-                data                                  Phase behaviour
-                                                   Solid, liquid, gas
-       Spectral data                                  UV, IR, NMR, MS
-                          Related compounds
-  Related carboxylic
-               acids                                Formic acid
-                                                    Propionic acid
-                                                         Butyric acid
-   Related compounds                      Acetamide
-                                          Ethyl acetate
-                                          Acetyl chloride
-                                          Acetic anhydride
-                                          Acetonitrile
-                                          Acetaldehyde
-                                                              Ethanol
-          Except where noted otherwise, data are given for
-                materials in their standard state (at 25°C, 100 kPa)
-                                    Infobox disclaimer and references
+            Flash point                                             43°C
+            R-phrases                                         R10, R35
+            S-phrases                              S1/2, S23, S26, S45
+      U.S. Permissible
+   exposure limit (PEL)                                           10 ppm
+                        Supplementary data page
+            Structure
+         & properties                                    n, ε[r], etc.
+         Thermodynamic
+                  data                                  Phase behaviour
+                                                      Solid, liquid, gas
+         Spectral data                                  UV, IR, NMR, MS
+                           Related compounds
+   Related carboxylic
+                  acids                                Formic acid
+                                                      Propionic acid
+                                                            Butyric acid
+      Related compounds                      Acetamide
+                                             Ethyl acetate
+                                             Acetyl chloride
+                                             Acetic anhydride
+                                             Acetonitrile
+                                             Acetaldehyde
+                                                               Ethanol
+            Except where noted otherwise, data are given for
+                  materials in their standard state (at 25°C, 100 kPa)
+                                       Infobox disclaimer and references
 
    Acetic acid, also known as ethanoic acid, is an organic chemical
    compound best recognized for giving vinegar its sour taste and pungent

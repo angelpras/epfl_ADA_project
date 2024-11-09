@@ -9,6 +9,7 @@ Periodic table (large version)
    landscape mode, it may be possible to print this periodic table on one
    or two normal-size sheets of paper. The key below explains the
    colour-coding and layout of each entry.
+
    Group → 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18
   ↓  Period IA IIA IIIB IVB VB VIB VIIB VIIIB VIIIB VIIIB IB IIB IIIA IVA
                               VA VIA VIIA VIIIA

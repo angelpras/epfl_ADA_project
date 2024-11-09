@@ -9,6 +9,7 @@ Pentateuch
    Greek words: pente, meaning "five", and teuxos which roughly means
    "case", a reference to the cases containing the five scrolls of the
    Laws of Moses.
+
     1. Genesis
     2. Exodus
     3. Leviticus
