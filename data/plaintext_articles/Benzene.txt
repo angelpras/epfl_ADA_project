@@ -47,7 +47,7 @@ Benzene
                                                     R48/23/24/25, R65
                S-phrases                                     S53, S45
              Flash point                                       −11 °C
-Autoignition temperature                                       561 °C
+   Autoignition temperature                                       561 °C
             RTECS number                                    CY1400000
                           Related compounds
                  Related

@@ -4,8 +4,8 @@ Sony
 
 2007 Schools Wikipedia Selection. Related subjects: Companies
 
- Sony Corporation
- ソニー株式会社
+   Sony Corporation
+   ソニー株式会社
        Type       Public ( TYO: 6758 ; NYSE: SNE)
      Founded      May 7, 1946 (adopted current name in 1958) by Masaru Ibuka and
                   Akio Morita
@@ -21,7 +21,7 @@ Sony
                   Semiconductors
                   others
      Revenue      $63,980 million USD ( 2006)
- Operating income $1,604 million USD (2006)
+   Operating income $1,604 million USD (2006)
     Net income    $1,058 million USD (2006)
     Employees     158,500 (March 31, 2006)
    Subsidiaries   Sony Electronics

@@ -6,13 +6,13 @@ C++
 
    CAPTION: C++
 
- Image:C plus plus book.jpg
+   Image:C plus plus book.jpg
        Paradigm:        multi-paradigm: generic-programming language with a bias
                         towards systems programming, object-oriented, procedural
       Appeared in:      1985, last revised 2003
       Designed by:      Bjarne Stroustrup
    Typing discipline:   static, unsafe, nominative
- Major implementations: GNU Compiler Collection, Microsoft Visual C++,
+   Major implementations: GNU Compiler Collection, Microsoft Visual C++,
                         Borland C++ Builder
        Dialects:        ANSI C++ 1998, ANSI C++ 2003
      Influenced by:     C, Simula, Ada 83, ALGOL 68, CLU, ML

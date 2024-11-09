@@ -51,13 +51,11 @@ Pali Canon
    sort of pre-eminence among sources for early Buddhism. It is composed
    in the Pali language, and falls into three general categories, called
    pitaka (piṭaka, basket) in Pali. Because of this, the canon is
-   traditionally known as the Tipitaka (Tipiṭaka; three baskets). The
-   three pitakas are as follows.
-    1. Vinaya Pitaka, dealing with rules for monks and nuns
-    2. Sutta Pitaka, discourses, most ascribed to the Buddha, but some to
-       disciples
-    3. Abhidhamma Pitaka, variously described as philosophy, psychology,
-       metaphysics etc.
+   traditionally known as the Tipitaka (Tipiṭaka; three baskets). The 
+   three pitakas are as follows. 1. Vinaya Pitaka, dealing with rules for
+   monks and nuns. 2. Sutta Pitaka, discourses, most ascribed to the
+   Buddha, but some to disciples. 3. Abhidhamma Pitaka, variously
+   described as philosophy, psychology, metaphysics etc.
 
 The Canon in the Buddhist tradition
 

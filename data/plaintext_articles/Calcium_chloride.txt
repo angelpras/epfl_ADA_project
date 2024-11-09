@@ -32,7 +32,7 @@ Calcium chloride
          Boiling point                                       >1600 °C
        Vapour Pressure                                         11 hPa
                               Structure
- Coordination geometry                       octahedral, 6-coordinate
+   Coordination geometry                       octahedral, 6-coordinate
      Crystal structure                                deformed rutile
                                Hazards
                   MSDS                                  External MSDS
@@ -49,7 +49,7 @@ Calcium chloride
                                     EV9810000, dihydrate
                                                EV9830000, hexahydrate
                        Supplementary data page
-Structure & properties                                  n, ε[r], etc.
+   Structure & properties                                  n, ε[r], etc.
     Thermodynamic data                                Phase behaviour
                                                    Solid, liquid, gas
          Spectral data                                UV, IR, NMR, MS

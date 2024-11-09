@@ -30,15 +30,15 @@ Sodium sulfate
             Density                    2.68 g/cm^3, anhydrous
                                        (orthorhombic form)
                                             1.464 g/cm^3, decahydrate
-Solubility in water                             4.76 g/100 ml (0 °C)
+   Solubility in water                             4.76 g/100 ml (0 °C)
                                                42.7 g/100 ml (100 °C)
          In ethanol                                         insoluble
       Melting point                        884 °C (1157 K) anhydrous
                                                   32.4 °C decahydrate
                               Structure
        Coordination
-           geometry                                                 ?
-  Crystal structure                       monoclinic, orthorhombic or
+          geometry                                                 ?
+   Crystal structure                       monoclinic, orthorhombic or
                                                             hexagonal
                                Hazards
                MSDS                                     External MSDS

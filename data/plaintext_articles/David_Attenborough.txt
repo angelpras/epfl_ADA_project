@@ -7,16 +7,16 @@ media figures
 
    CAPTION: David Attenborough
 
-David Attenborough's autobiography, Life on Air
-David Attenborough's autobiography, Life on Air
+   David Attenborough's autobiography, Life on Air
+   David Attenborough's autobiography, Life on Air
      Born      8 May 1926
                London, England
-  Residence    Richmond upon Thames, London
- Nationality   British
+   Residence    Richmond upon Thames, London
+   Nationality   British
     Field      Naturalist
-  Alma Mater   Clare College, University of Cambridge ( Natural Sciences);
+   Alma Mater   Clare College, University of Cambridge ( Natural Sciences);
                University College London (Anthropology)
-Notable Prizes Order of Merit, Order of the Companions of Honour, Royal
+   Notable Prizes Order of Merit, Order of the Companions of Honour, Royal
                Victorian Order, Order of the British Empire, Fellow of the Royal
                Society
 

@@ -26,7 +26,7 @@ Menthol
          Density and phase                        0.890 g/cm^3, solid
                                               (racemic or (−)-isomer)
        Solubility in water               Slightly soluble, (−)-isomer
-In ethanol, diethyl ether,
+   In ethanol, diethyl ether,
        acetone, chloroform
        acetic acid, hexane                                    Soluble
              Melting point   36-38 °C (311 K), racemic

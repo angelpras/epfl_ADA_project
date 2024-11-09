@@ -21,7 +21,9 @@ Politics and government
    Movement consists of several distinct organizations that are legally
    independent from each other, but are united within the Movement through
    common basic principles, objectives, symbols, statutes, and governing
-   organs. The Movement has several parts:
+   organs.
+
+   The Movement has several parts:
      * The International Committee of the Red Cross (ICRC) is a private
        humanitarian institution founded in 1863 in Geneva, Switzerland.
        Its 25-member committee has a unique authority under international

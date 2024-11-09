@@ -41,12 +41,12 @@ Sulfuric acid
            Flash point                                  Non-flammable
           RTECS number                                      WS5600000
                        Supplementary data page
-Structure & properties                                  n, ε[r], etc.
+   Structure & properties                                  n, ε[r], etc.
     Thermodynamic data                                Phase behaviour
                                                    Solid, liquid, gas
          Spectral data                                UV, IR, NMR, MS
                           Related compounds
-  Related strong acids              Selenic acid
+   Related strong acids              Selenic acid
                                        Hydrochloric acid
                                              Nitric acid
                                                       Phosphoric acid

@@ -14,7 +14,7 @@ Britain; Road transport
                                                                 364.8 km
            Direction                                       South - North
                Start                                           Catthorpe
-Primary destinations                          Rugby
+   Primary destinations                          Rugby
                                               Coventry
                                               Birmingham
                                               Walsall
@@ -27,7 +27,7 @@ Primary destinations                          Rugby
                                               Kendal
                                                                  Penrith
                  End                                            Carlisle
-  Construction dates                                         1958 - 1972
+   Construction dates                                         1958 - 1972
     Motorways joined
                                                         M1 motorway
                                                         2 -
@@ -58,7 +58,7 @@ Primary destinations                          Rugby
                                                         M55 motorway
                                                         35 -
                                                         A601(M) motorway
-Euroroute(s)
+   Euroroute(s)
 
 
                      E 05

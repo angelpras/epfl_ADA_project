@@ -18,12 +18,12 @@ Gold(III) chloride
                              Properties
       Density and phase                            3.9 g/cm^3 (solid)
     Solubility in water                            68 g/100 ml (cold)
- ethanol, diethyl ether                                       soluble
+   ethanol, diethyl ether                                       soluble
           Melting point                               254 °C (527 K)
                                                          (decomposes)
-Magnetic Susceptibility                            -0.000112 cm^3/mol
+   Magnetic Susceptibility                            -0.000112 cm^3/mol
                               Structure
-  Coordination geometry                                 Square planar
+   Coordination geometry                                 Square planar
       Crystal structure                                    monoclinic
                                Hazards
                    MSDS                                 External MSDS
@@ -38,7 +38,7 @@ Magnetic Susceptibility                            -0.000112 cm^3/mol
           R/S statement                          R: 36/37/38 S: 26-36
            RTECS number                         MD5420000 (anhydrous)
                        Supplementary data page
- Structure & properties                                 n, ε[r], etc.
+   Structure & properties                                 n, ε[r], etc.
      Thermodynamic data                               Phase behaviour
                                                    Solid, liquid, gas
           Spectral data                               UV, IR, NMR, MS

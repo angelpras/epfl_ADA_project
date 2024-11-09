@@ -24,7 +24,7 @@ Sanskrit
    ISO 639-1: sa
    ISO 639-2: san
    ISO/FDIS 639-3: san
-Indic script
+   Indic script
             This page contains Indic text. Without rendering support you may see
             irregular vowel positioning and a lack of conjuncts. More...
 

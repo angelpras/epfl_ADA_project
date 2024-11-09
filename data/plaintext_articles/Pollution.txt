@@ -11,7 +11,9 @@ Pollution
    Pollution is the release of environmental contaminants. The U.S.,
    Russia, Mexico, China and Japan are the world leaders in air pollution
    emissions; however, Canada is the number two country on a per capita
-   basis. The major forms of pollution include:
+   basis.
+
+   The major forms of pollution include:
      * air pollution, the release of chemicals and particulates into the
        atmosphere. Common examples include carbon monoxide, sulfur
        dioxide, chlorofluorocarbons (CFCs), and nitrogen oxides produced

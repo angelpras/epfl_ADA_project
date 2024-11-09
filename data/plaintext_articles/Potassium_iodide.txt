@@ -23,7 +23,7 @@ Potassium iodide
     Alkilinity (pK[b])                                              ?
                               Structure
        Molecular shape                                              ?
- Coordination geometry                                              ?
+   Coordination geometry                                              ?
      Crystal structure                                              ?
          Dipole moment                                            ? D
                                Hazards
@@ -39,7 +39,7 @@ Potassium iodide
                                                  S: 26, 36-37, 39, 45
           RTECS number                                      TT2975000
                        Supplementary data page
-Structure & properties                                  n, ε[r], etc.
+   Structure & properties                                  n, ε[r], etc.
     Thermodynamic data                                Phase behaviour
                                                    Solid, liquid, gas
          Spectral data                                UV, IR, NMR, MS

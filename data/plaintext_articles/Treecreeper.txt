@@ -28,12 +28,10 @@ Treecreeper
    Salpornis spilonotus
 
    The treecreepers (Certhiidae) are a family of small passerine birds,
-   consisting of two subfamilies:
-     * The typical treecreepers (Certhiinae) are a group of seven species
-       found in Europe and Asia, with one representative, the Brown
-       Creeper, in North America.
-     * The Spotted Creeper Salpornis spilonotus (Salpornithinae), which is
-       found in India and Africa.
+   consisting of two subfamilies: The typical treecreepers (Certhiinae) are
+   a group of seven species found in Europe and Asia, with one representative,
+   the Brown Creeper, in North America. The Spotted Creeper Salpornis
+   spilonotus (Salpornithinae), which is found in India and Africa.
 
 Typical treecreepers
 

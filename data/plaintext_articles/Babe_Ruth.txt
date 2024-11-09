@@ -4,34 +4,34 @@ Babe Ruth
 
 2007 Schools Wikipedia Selection. Related subjects: Sports and games people
 
-   CAPTION: Babe Ruth
+      CAPTION: Babe Ruth
 
-                                   Babe Ruth
-                                 Personal Info
- Birth          February 6, 1895, Baltimore, Maryland
- Death:         August 16, 1948, New York, New York
-                              Professional Career
- Debut          July 11, 1914, Boston Red Sox vs. Cleveland Indians, Fenway Park
- Team(s)        Boston Red Sox ( 1914- 1919)
-                New York Yankees ( 1920- 1934)
-                Boston Braves ( 1935)
- HOF induction: 1936
-                               Career Highlights
+                                    Babe Ruth
+                                    Personal Info
+   Birth          February 6, 1895, Baltimore, Maryland
+   Death:         August 16, 1948, New York, New York
+                                 Professional Career
+   Debut          July 11, 1914, Boston Red Sox vs. Cleveland Indians, Fenway Park
+   Team(s)        Boston Red Sox ( 1914- 1919)
+                  New York Yankees ( 1920- 1934)
+                  Boston Braves ( 1935)
+   HOF induction: 1936
+                                 Career Highlights
 
- All-Time records
+   All-Time records
 
-   * Career SLUG: 0.690
-   * Career OPS: 1.164
+      * Career SLUG: 0.690
+      * Career OPS: 1.164
 
- Notable achievements
+   Notable achievements
 
-   * 2nd in career OBS (.469)
-   * 3rd on All-Time Home Run list (714)
-   * Only player to hit 3 home runs twice in a World Series game (1926 &
-     1928)
-   * Won the 1923 MVP Award
-   * Appeared in 1933 & 1934 All-Star Game
-   * First player ever to hit 60 home runs in a season
+      * 2nd in career OBS (.469)
+      * 3rd on All-Time Home Run list (714)
+      * Only player to hit 3 home runs twice in a World Series game (1926 &
+      1928)
+      * Won the 1923 MVP Award
+      * Appeared in 1933 & 1934 All-Star Game
+      * First player ever to hit 60 home runs in a season
 
    George Herman Ruth, Jr. ( February 6, 1895 -- August 16, 1948), also
    known as "Babe", "The Bambino", "The Sultan of Swat", and "The Colossus

@@ -9,8 +9,9 @@ Physical science
    contrast to the biological sciences. However, the term "physical"
    creates an unintended, somewhat arbitrary distinction, since many
    branches of physical science also study biological phenomena. Note that
-   neither mathematics nor engineering belong to the sciences. Basic
-   physical science topics include:
+   neither mathematics nor engineering belong to the sciences.
+
+   Basic physical science topics include:
      * Astronomy - the study of the universe beyond the atmosphere of the
        Earth
      * Chemistry - the science dealing with the composition of substances,

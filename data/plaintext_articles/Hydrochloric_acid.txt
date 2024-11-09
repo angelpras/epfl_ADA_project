@@ -11,7 +11,7 @@ Hydrochloric acid
                                General
     Systematic name                                  Hydrochloric acid
         Other names                                      Muriatic acid
-  Molecular formula                               HCl in water (H[2]O)
+   Molecular formula                               HCl in water (H[2]O)
          Molar mass                                  36.46 g/mol (HCl)
          Appearance                                 Clear colorless to
                                                    light-yellow liquid
@@ -19,14 +19,14 @@ Hydrochloric acid
                               Properties
      Density, phase                                       1.18 g/cm³,
                                                          37% solution.
-Solubility in water                                    Fully miscible.
+   Solubility in water                                    Fully miscible.
       Melting point                                  −26 °C (247 K)
                                                          38% solution.
       Boiling point                     110 °C (383 K),
                                         20.2% solution;
                                         48 °C (321 K),
                                                          38% solution.
-  Acid dissociation
+   Acid dissociation
      constant pK[a]                                               −8.0
           Viscosity                              1.9 mPa·s at 25 °C,
                                                         31.5% solution

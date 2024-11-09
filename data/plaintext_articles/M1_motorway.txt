@@ -11,7 +11,7 @@ Britain; Road transport
            Direction                                       South - North
                Start                                              London
                                                           Staples Corner
-Primary destinations                        Watford
+   Primary destinations                        Watford
                                             St Albans
                                             Hemel Hempstead
                                             Luton
@@ -32,7 +32,7 @@ Primary destinations                        Watford
                                             Dewsbury
                                                                    Leeds
                  End                                            Aberford
-  Construction dates                                         1959 - 1999
+   Construction dates                                         1959 - 1999
     Motorways joined                               6A -
                                                    M25 motorway
                                                    7 -
@@ -51,7 +51,7 @@ Primary destinations                        Watford
                                                    M621 motorway
                                                    48 -
                                                           A1(M) motorway
-Euroroute(s)
+   Euroroute(s)
 
 
                      E 13

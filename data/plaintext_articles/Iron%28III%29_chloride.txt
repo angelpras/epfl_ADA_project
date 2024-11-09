@@ -25,7 +25,7 @@ Iron(III) chloride
          Density and phase                             2.80 g cm^−3
                                             40% solution: 1.4 g ml^−1
        Solubility in water                        92 g/100 ml (20 °C)
-In other solvents: acetone
+   In other solvents: acetone
                   Methanol
                    Ethanol
              Diethyl ether         63 g/100 ml (18 °C)

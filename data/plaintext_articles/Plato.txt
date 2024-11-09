@@ -5,15 +5,15 @@ Plato
 2007 Schools Wikipedia Selection. Related subjects: Philosophers
 
                               Western Philosophy
-Ancient philosophy
-Plato - (ca. 427-347 B.C.)
+   Ancient philosophy
+   Plato - (ca. 427-347 B.C.)
       Name:       Plato
      Birth:       c. 427– 428 BC
      Death:       347 BC
-School/tradition: Platonism
- Main interests:  Metaphysics, Epistemology, Ethics, Aesthetics,
+   School/tradition: Platonism
+   Main interests:  Metaphysics, Epistemology, Ethics, Aesthetics,
                   Politics, Education, Philosophy of mathematics, Metaphilosophy
- Notable ideas:   Platonic realism
+   Notable ideas:   Platonic realism
    Influences:    Socrates, Archytas, Democritus, Parmenides, Pythagoras
    Influenced:    Almost all Western philosophers
 

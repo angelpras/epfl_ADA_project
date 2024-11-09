@@ -12,7 +12,7 @@
     Last storm dissipated:                                     December 11, 2003
           Strongest storm: Isabel - 915  mbar (27.01  inHg), 145 knots (165 mph)
              Total storms:                                                    16
-  Major storms ( Cat. 3+):                                                     3
+   Major storms ( Cat. 3+):                                                    3
              Total damage:                                $4 billion (2003  USD)
                                                          $4.3 billion (2005 USD)
          Total fatalities:                                                    92

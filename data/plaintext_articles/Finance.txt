@@ -41,14 +41,13 @@ Finance
    Economy
                    edit this box
 
-   Finance studies and addresses the ways in which individuals,
-   businesses, and organizations raise, allocate, and use monetary
-   resources over time, taking into account the risks entailed in their
-   projects. The term finance may thus incorporate any of the following:
-     * The study of money and other assets
-     * The management and control of those assets
-     * Profiling and managing project risks
-     * As a verb, "to finance" is to provide funds for business.
+   Finance studies and addresses the ways in which individuals, businesses,
+   and organizations raise, allocate, and use monetary resources over time,
+   taking into account the risks entailed in their projects. The term
+   finance may thus incorporate any of the following: the study of money
+   and other assets, the management and control of those assets, profiling
+   and managing project risks, as a verb, "to finance" is to provide funds
+   for business.
 
 Examples of some basic financial concepts
 

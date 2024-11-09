@@ -28,7 +28,7 @@ Tamil language
    ISO 639-1: ta
    ISO 639-2: tam
    ISO/FDIS 639-3: tam
-Indic script
+   Indic script
             This page contains Indic text. Without rendering support you may see
             irregular vowel positioning and a lack of conjuncts. More...
 

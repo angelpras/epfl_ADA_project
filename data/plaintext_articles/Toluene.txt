@@ -24,7 +24,7 @@ Toluene
        dichloromethane                                 Fully miscible
          Melting point                      −93 °C (180 K)/(-135.4°F)
          Boiling point                   110.6 °C (383.8 K)/ 231.08°F
-  Critical temperature                          320 °C (593 K)/ 608°F
+   Critical temperature                          320 °C (593 K)/ 608°F
              Viscosity                        0.590 c P at 20°C/ 68°F
          Dipole moment                                         0.36 D
                                Hazards
@@ -41,7 +41,7 @@ Toluene
              S-phrases                             S16, S25, S29, S33
           RTECS number                                      XS5250000
                        Supplementary data page
-Structure & properties                                  n, ε[r], etc.
+   Structure & properties                                  n, ε[r], etc.
     Thermodynamic data                                Phase behaviour
                                                    Solid, liquid, gas
          Spectral data                                UV, IR, NMR, MS

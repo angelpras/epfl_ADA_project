@@ -22,7 +22,8 @@ Cholera
    physician Garcia de Orta in Colóquios dos Simples e Drogas da India (
    1563). Europe witnessed several epidemics in the 19th century, but the
    disease is since mostly seen in Third World countries, due to poor
-   water infrastructure
+   water infrastructure.
+
    Cholera Toxin. The delivery region (blue) binds membrane carbohydrates
    to get into cells. The toxic part (red) is activated inside the cell
    (PDB code: 1xtc)

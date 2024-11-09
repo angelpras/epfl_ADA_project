@@ -25,7 +25,7 @@ Hindi
    ISO 639-1: hi
    ISO 639-2: hin
    ISO/FDIS 639-3: hin
-Indic script
+   Indic script
             This page contains Indic text. Without rendering support you may see
             irregular vowel positioning and a lack of conjuncts. More...
 
