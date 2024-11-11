@@ -39,7 +39,6 @@ Countries
    Time zone ( UTC+5:30)
    Internet TLD .lk
    Calling code +94
-
        To download the Sinhala fonts used in this article, please see
                         Wikipedia:Sinhala Font Guide.
 

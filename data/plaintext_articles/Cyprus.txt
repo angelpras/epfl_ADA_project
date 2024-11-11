@@ -50,7 +50,6 @@ Countries
    Turkish-controlled areas.
    ^3 The .eu domain is also used, shared with other European Union member
    states.
-
           Not to be confused with Cypress.
 
    Cyprus ( Greek: Κύπρος, Kýpros; Turkish: Kıbrıs), officially the

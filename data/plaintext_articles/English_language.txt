@@ -32,7 +32,6 @@ English language
    ISO 639-1: en
    ISO 639-2: eng
    ISO/FDIS 639-3: eng
-
     World countries, states, and provinces where English is the de facto
    official language are dark blue; countries, states, and provinces where
         it is an official, but not a primary language are light blue.

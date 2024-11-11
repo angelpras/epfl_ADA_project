@@ -8,7 +8,9 @@ Comma Johanneum
    translations of the First Epistle of John published from 1522 until the
    latter part of the nineteenth century, owing to the widespread use of
    the third edition of the Textus Receptus (TR) as the sole source for
-   translation. In readings containing the clause, such as this one from
+   translation.
+
+   In readings containing the clause, such as this one from
    the King James Bible, 1 John 5:7–8 reads as follows, the Comma itself
    here rendered with emphasis:
 

@@ -61,6 +61,7 @@ def parse_wiki_article(text):
         # and end with either of .!?) symbols
         if len(paragraph_lines) == 0 or \
            not re.match(r'^[a-zA-ZÀ-ÖØ-Þ0-9\W]', paragraph_lines[0]) or \
+           re.match(r'See .*?\.', paragraph_lines[0]) or \
            not re.match(r'.*(?:[.!?\"\n]|\.\))$', paragraph_lines[-1]):
             continue
 
@@ -109,52 +110,38 @@ def process_articles_directory(directory_path):
 def remove_duplicates_and_enlarge(lines):
     line_counts = Counter(lines)
     filtered_lines = [line for line in lines if line_counts[line] == 1]
-    print(filtered_lines)
-    patterns_to_remove = [r'This is a featured article. Click here for more information.',
-                       r'The references in this articles*?page for further details.',
-                       r'Enlarge',
-                       r'Infobox last updated on:*?.']
-    combined_pattern = re.compile('|'.join(patterns_to_remove), re.IGNORECASE | re.DOTALL)
+
+    patterns_to_remove = [
+        r'This is a featured.*?Click here for more information.',
+        r'The references in this article.*?further details\.',
+        r'Enlarge',
+        r'Infobox last updated on.*?\.',
+        r'This is a spoken article. Click here to listen.',
+        r'^[A-Z][\w\W]*?see text\.$',
+        r'^[A-Z][\w\W]*?see below\.$',
+        r'Image\:.*?Indic text\..*?More\.\.\.',
+        r'This article is currently.*?to the process\.',
+        r'Note\: This page.*?pronunciation key\.',
+        r'Note\: This article contains special characters\.'
+    ]
+
+    combined_pattern = re.compile('|'.join(patterns_to_remove), re.DOTALL)
     full_text = ' '.join(filtered_lines)
     
     # Remove unwanted patterns
     cleaned_text = combined_pattern.sub('', full_text)
     cleaned_lines = [line for line in filtered_lines if line in cleaned_text]
-    print(cleaned_lines)
     return cleaned_lines
 
 # Example usage
 if __name__ == "__main__":
     # Test with a sample that has section structure
-    sample_text = """   #copyright
+    import sys
+    filepath = sys.argv[1]
+    with open(filepath, 'r', encoding='utf-8') as file:
+        content = file.read()
 
-Driving on the left or right
-
-2007 Schools Wikipedia Selection. Related subjects: Road transport
-
-   The references in this article would be clearer with a different and/or
-   consistent style of citation, footnoting or external linking. Please
-   see the relevant discussion on the talk page for further details.
-   ██ drive on right██ drive on left
-   Enlarge
-   ██ drive on right██ drive on left
-
-   Keeping to either the left or the right prevents vehicles moving in
-   opposite directions from colliding with each other. This is so
-   fundamental that it is sometimes known simply as the rule of the road.
-   About 34% of the world by population drives on the left, and 66% keeps
-   right. By roadway distances, about 28% drive on the left, and 72% on
-   the right.
-
-   In more sophisticated systems such as large cities, this concept is
-   further extended: some streets are marked as being one-way, and on
-   those streets all traffic must flow in only one direction. A driver
-   wishing to reach a destination already passed must use other streets in
-   order to return.
-
-History"""
-
-    title, subjects, para = parse_wiki_article(sample_text)
+        title, subjects, para = parse_wiki_article(content)
     print(f"Title: {title}")
     print(f"Subjects: {subjects}")
     print(f"First Paragraph: {para}")

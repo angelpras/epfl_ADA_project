@@ -45,7 +45,6 @@ Countries
       Internet TLD    .ie^2
       Calling code    +353
    ^1 Prior to 1999: Irish pound.
-
    ^2 The .eu domain is also used, as it is shared with other European
    Union member states.
 

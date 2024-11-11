@@ -6,7 +6,9 @@ Fundamental theorem of arithmetic
 
    In number theory, the fundamental theorem of arithmetic (or unique
    factorization theorem) states that every natural number greater than 1
-   can be written as a unique product of prime numbers. For instance,
+   can be written as a unique product of prime numbers.
+
+   For instance,
 
           6936 = 2^3 \times 3 \times 17^2 , \,\!
 

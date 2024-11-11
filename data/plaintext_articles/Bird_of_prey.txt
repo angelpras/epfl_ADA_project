@@ -27,6 +27,7 @@ Bird of prey
    A bird of prey or raptor is a bird that hunts for food primarily using
    its talons. They display a characteristic curved tip to their beak and
    have superb vision.
+
    Diurnal birds of prey belong to the orders Accipitriformes and
    Falconiformes in several groups including:
      * Accipitriformes

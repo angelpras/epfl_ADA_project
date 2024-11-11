@@ -4,6 +4,8 @@ Elementary group theory
 
 2007 Schools Wikipedia Selection. Related subjects: Mathematics
 
+  Elementary group theory.
+
    In mathematics, a group (G,*) is usually defined as:
 
    G is a set and * is an associative binary operation on G, obeying the
