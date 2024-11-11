@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import networkx as nx
-%matplotlib inline
+#matplotlib inline
 import seaborn as sns
 import math
 import os
@@ -94,6 +94,9 @@ def  preprocessing_links(data_path):
 
     decoding(df_links,"Articles")
     decoding(df_links,"Links")
+    df_links['Links'] = df_links['Links'].apply(lambda x: x.split())
+    df_links=df_links.groupby("Articles").agg({"Links":"sum"}).reset_index()
+
     return df_links
 
 def glove_embedding(df_articles,device_="cpu"):

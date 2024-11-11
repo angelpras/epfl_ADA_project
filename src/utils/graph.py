@@ -44,6 +44,7 @@ def create_graph(embedded_articles, df_links):
                 cosine_title = cosine_similarity(embedding_title_article.reshape(1, -1), embedding_title_link.reshape(1, -1))[0, 0]
                 cosine_description = cosine_similarity(embedding_description_article.reshape(1, -1), embedding_description_link.reshape(1, -1))[0, 0]
 
-                G.add_edge(article, link, weight=cosine_score)
-    return G
+                G.add_edge(article, link, weght_title=cosine_title, weight_description=cosine_description)
+
+    return G 
     
