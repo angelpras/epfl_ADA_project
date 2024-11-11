@@ -26,7 +26,7 @@ def create_graph(embedded_articles, df_links):
         G.add_node(article, embedding_title=embedding_title,embedding_description=embedding_description)
 
 
-    # Add edeges to the graph
+    # Add edges to the graph
     for index, row in df_links.iterrows():
         article = row['Articles']
         links = row['Links']
@@ -44,7 +44,7 @@ def create_graph(embedded_articles, df_links):
                 cosine_title = cosine_similarity(embedding_title_article.reshape(1, -1), embedding_title_link.reshape(1, -1))[0, 0]
                 cosine_description = cosine_similarity(embedding_description_article.reshape(1, -1), embedding_description_link.reshape(1, -1))[0, 0]
 
-                G.add_edge(article, link, weght_title=cosine_title, weight_description=cosine_description)
+                G.add_edge(article, link, weight_title=cosine_title, weight_description=cosine_description)
 
     return G 
     
