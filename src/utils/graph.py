@@ -2,11 +2,10 @@ import numpy as np
 import networkx as nx
 from sklearn.metrics.pairwise import cosine_similarity
 
-def visualization(embedded_articles,df_links):
+def create_graph(embedded_articles,df_links):
     """
     Returns G, the connected graph of the selected articles  
     """
-    
     G = nx.DiGraph()
 
     # Add nodes with embeddings as attributes 
