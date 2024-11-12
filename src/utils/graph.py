@@ -1,14 +1,11 @@
 import numpy as np
 import pandas as pd
 import networkx as nx
-from sklearn.metrics.pairwise import cosine_similarity
-from utils import process_articles_directory
+from sentence_transformers.util import dot_score
 
-
-def articles_to_embeddings(articles_path, model):
+def articles_to_embeddings(parsed_articles, model):
     
-    result = process_articles_directory(articles_path)
-    df = pd.DataFrame(result, columns=['Article_Title', 'Related_Subjects', 'Description'])
+    df = pd.DataFrame(parsed_articles, columns=['Article_Title', 'Related_Subjects', 'Description'])
     df['Article_Title_embedding'] = df['Article_Title'].apply(model.encode, engine='numba', engine_kwargs={'parallel':True})
     df['Description_embedding'] = df['Description'].apply(model.encode, engine='numba', engine_kwargs={'parallel':True})
     embedded_articles = dict(zip(df['Article_Title'], zip(df['Article_Title_embedding'], df['Description_embedding'] )))
@@ -41,8 +38,8 @@ def create_graph(embedded_articles, df_links):
                 embedding_title_link = embedding_link[0]
                 embedding_description_link = embedding_link[1]
 
-                cosine_title = cosine_similarity(embedding_title_article.reshape(1, -1), embedding_title_link.reshape(1, -1))[0, 0]
-                cosine_description = cosine_similarity(embedding_description_article.reshape(1, -1), embedding_description_link.reshape(1, -1))[0, 0]
+                cosine_title = float(dot_score(embedding_title_article, embedding_title_link))
+                cosine_description = float(dot_score(embedding_description_article, embedding_description_link))
 
                 G.add_edge(article, link, weight_title=cosine_title, weight_description=cosine_description)
 

@@ -1,4 +1,4 @@
 from .ArticlesParser import *
-from .graph import *
+from .Graph import *
 from .Preprocessing import *
-from .visualization import *
+from .Visualization import *
