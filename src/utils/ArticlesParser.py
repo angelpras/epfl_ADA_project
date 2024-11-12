@@ -1,5 +1,6 @@
 import os
 import re
+from urllib.parse import unquote
 from collections import Counter
 def parse_wiki_article(text):
     """
@@ -127,12 +128,20 @@ def process_articles_directory(directory_path):
             except:
                 print(f"Article {filename} could not be parsed")
             if title and paragraph:
-                newtitle = filename.replace('.txt', '')
-                results.append((newtitle, subjects, paragraph))
+                
+                results.append((decode_filename(filename), subjects, paragraph))
             else:
                 print(f"Article {filename} could not be parsed")
     
     return results
+
+def decode_filename(filename):
+    url_encoded_pattern = re.compile(r"%[0-9A-Fa-f]{2}")
+    newtitle = filename.replace('.txt', '')
+
+    if (url_encoded_pattern.search(newtitle)):
+        newtitle = unquote(newtitle) 
+    return newtitle
 
 # Example usage
 if __name__ == "__main__":
