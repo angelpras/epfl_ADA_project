@@ -39,27 +39,31 @@ def preprocessing_and_embedding():
     return df_articles,df_links,article_to_embedding,article_to_embedding2
 
 
-
 def change_name_files_plaintext_articles(data_path):
     """
-    Modify the names of the files in the plaintext_articles folder, to 
-    handle the url encoding
+    Modify the names of the files in the plaintext_articles folder to 
+    handle the URL encoding.
     """
-    #Get the articles list
-    plain_path=os.path.join(data_path,r"plaintext_articles")
-    articles_list=os.listdir(plain_path)
+    # Get the articles list
+    plain_path = os.path.join(data_path, "plaintext_articles")
+    articles_list = os.listdir(plain_path)
 
-    #Check if there is a # followed by two hexadecimal numbers (URL ENCODING FOR SPECIAL CHARACTERS)
+    # URL encoding pattern (e.g., %20 for space, %2F for slash)
     url_encoded_pattern = re.compile(r"%[0-9A-Fa-f]{2}")
 
-    #Change the file name in the plaintext directory
+    # Change the file names in the plaintext directory
     for article in articles_list:
+        # Check if the filename contains URL encoding
         if url_encoded_pattern.search(article):
-            if os.path.exists(unquote(os.path.join(plain_path,article))):
-                print(f"Skipping rename, file already exists: {unquote(os.path.join(plain_path,article))}")
+            original_path = os.path.join(plain_path, article)
+            decoded_filename = unquote(article)
+            new_path = os.path.join(plain_path, decoded_filename)
+
+            if os.path.exists(new_path):
+                print(f"Skipping rename, file already exists: {new_path}")
             else:
-                print(f"Renamed: {os.path.join(plain_path,article)} -> {os.path.join(plain_path,article)}")
-                os.rename(os.path.join(plain_path,article),unquote(os.path.join(plain_path,article)))
+                print(f"Renaming: {original_path} -> {new_path}")
+                os.rename(original_path, new_path)
        
 def preprocessing_articles(data_path):  
     """      

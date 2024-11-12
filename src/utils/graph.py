@@ -42,6 +42,8 @@ def create_graph(embedded_articles, df_links):
                 cosine_description = float(dot_score(embedding_description_article, embedding_description_link))
 
                 G.add_edge(article, link, weight_title=cosine_title, weight_description=cosine_description)
+            else:
+                print(f"Article {article} or {link} couldn't be found")
 
     return G 
     

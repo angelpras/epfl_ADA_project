@@ -85,28 +85,6 @@ def parse_wiki_article(text):
     
     return title, subjects, first_paragraph
 
-def process_articles_directory(directory_path):
-    """Process all text files in a directory and extract article information."""
-    results = []
-    
-    for filename in os.listdir(directory_path):
-        if not filename.endswith('.txt'):
-            continue
-            
-        filepath = os.path.join(directory_path, filename)
-        with open(filepath, 'r', encoding='utf-8') as file:
-            content = file.read()
-            try:
-                title, subjects, paragraph = parse_wiki_article(content)
-            except:
-                print(f"Article {filename} could not be parsed")
-            if title and paragraph:
-                results.append((title, subjects, paragraph))
-            else:
-                print(f"Article {filename} could not be parsed")
-    
-    return results
-
 def remove_duplicates_and_enlarge(lines):
     line_counts = Counter(lines)
     filtered_lines = [line for line in lines if line_counts[line] == 1]
@@ -132,6 +110,29 @@ def remove_duplicates_and_enlarge(lines):
     cleaned_text = combined_pattern.sub('', full_text)
     cleaned_lines = [line for line in filtered_lines if line in cleaned_text]
     return cleaned_lines
+
+def process_articles_directory(directory_path):
+    """Process all text files in a directory and extract article information."""
+    results = []
+    
+    for filename in os.listdir(directory_path):
+        if not filename.endswith('.txt'):
+            continue
+            
+        filepath = os.path.join(directory_path, filename)
+        with open(filepath, 'r', encoding='utf-8') as file:
+            content = file.read()
+            try:
+                title, subjects, paragraph = parse_wiki_article(content)
+            except:
+                print(f"Article {filename} could not be parsed")
+            if title and paragraph:
+                newtitle = filename.replace('.txt', '')
+                results.append((newtitle, subjects, paragraph))
+            else:
+                print(f"Article {filename} could not be parsed")
+    
+    return results
 
 # Example usage
 if __name__ == "__main__":

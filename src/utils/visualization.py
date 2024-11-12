@@ -55,13 +55,11 @@ def visualize_unconnected_node_similarity_distributions(G, subset_size=350):
     subgraph = G.subgraph(subset_nodes)
     connected_pairs = set()
     for u, v in subgraph.edges():
-        if u < v:
-            connected_pairs.add((u, v))
-        else:
-            connected_pairs.add((v, u))
+        connected_pairs.add((u, v))
+        connected_pairs.add((v, u))
 
     # Find all unconnected article pairs in the subgraph
-    all_pairs = set((a, b) for a in subset_nodes for b in subset_nodes if a < b)
+    all_pairs = set((a, b) for a in subset_nodes for b in subset_nodes if a != b)
     unconnected_pairs = all_pairs - connected_pairs
 
     # Calculate cosine similarities for unconnected pairs
@@ -102,4 +100,6 @@ def visualize_unconnected_node_similarity_distributions(G, subset_size=350):
     plt.ylabel('Number of Occurrences')
     plt.grid(axis='y', alpha=0.75)
     plt.show()
+
+    return similarities
 
