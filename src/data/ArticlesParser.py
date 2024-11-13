@@ -2,6 +2,7 @@ import os
 import re
 from urllib.parse import unquote
 from collections import Counter
+
 def parse_wiki_article(text):
     """
     Parse a Wikipedia article text to extract title, subjects, and first meaningful paragraph.
@@ -21,7 +22,7 @@ def parse_wiki_article(text):
             subjects_line = line.strip()
 
             # Might have many lines pertaining to related subjects. Concatenate them.
-            while lines[i+1] != '':
+            while i + 1 < len(lines) and lines[i+1] != '':
                 subjects_line = ' '.join([subjects_line, lines[i+1].strip()])
                 del lines[i+1]
 
@@ -59,7 +60,7 @@ def parse_wiki_article(text):
         paragraph_lines = remove_duplicates_and_enlarge(paragraph_lines)
         
         # Paragraphs should start with an uppercase letter (punctuated or not) or a symbol,
-        # and end with either of .!?) symbols
+        # end with certain symbols, and shouldn't start with 'See '.
         if len(paragraph_lines) == 0 or \
            not re.match(r'^[a-zA-ZÀ-ÖØ-Þ0-9\W]', paragraph_lines[0]) or \
            re.match(r'See .*?\.', paragraph_lines[0]) or \
@@ -72,7 +73,7 @@ def parse_wiki_article(text):
         for i in range(len(paragraph_lines) - 1):  # Exclude last line
             current_line = paragraph_lines[i] + ' ' + paragraph_lines[i + 1].split(' ')[0]
 
-            # If there is a line break and the combined length of the lines is less than K, it's a fake paragraph
+            # If there is a line break and the combined length of the lines is less than 68, it's a fake paragraph
             if len(current_line) < 68:
                 is_fake_paragraph = True
                 # print(len(current_line))
@@ -113,7 +114,9 @@ def remove_duplicates_and_enlarge(lines):
     return cleaned_lines
 
 def process_articles_directory(directory_path):
-    """Process all text files in a directory and extract article information."""
+    """
+    Process all text files in a directory and extract article information.
+    """
     results = []
     
     for filename in os.listdir(directory_path):
@@ -136,17 +139,25 @@ def process_articles_directory(directory_path):
     return results
 
 def decode_filename(filename):
+    """
+    Decode URL-encoded characters in a filename.
+    """
     url_encoded_pattern = re.compile(r"%[0-9A-Fa-f]{2}")
     newtitle = filename.replace('.txt', '')
 
-    if (url_encoded_pattern.search(newtitle)):
+    if url_encoded_pattern.search(newtitle):
         newtitle = unquote(newtitle) 
     return newtitle
 
 # Example usage
 if __name__ == "__main__":
-    # Test with a sample that has section structure
+    # This script expects a file path as a command-line argument.
+    # It reads the content of the file, parses it, and prints the title, subjects, and first paragraph.
     import sys
+    if len(sys.argv) < 2:
+        print("Usage: python ArticlesParser.py <path_to_wikipedia_article>")
+        sys.exit(1)
+    
     filepath = sys.argv[1]
     with open(filepath, 'r', encoding='utf-8') as file:
         content = file.read()

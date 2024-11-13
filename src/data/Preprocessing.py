@@ -70,7 +70,6 @@ def preprocessing_articles(data_path):
     Returns a dataframe corresponding to the article.tsv file,
     remove missing values, duplicates and handle the url encoding 
     """
-    
     articles_path=os.path.join(data_path,r"wikispeedia_paths-and-graph","articles.tsv")
     df_articles = pd.read_csv(articles_path, sep='\t', header=None,comment="#")
 
@@ -89,7 +88,6 @@ def  preprocessing_links(data_path):
     Returns a dataframe corresponding to the links.tsv file,
     remove missing values and handle the url encoding 
     """
-    
     links_path=os.path.join(data_path,r"wikispeedia_paths-and-graph","links.tsv")
     df_links = pd.read_csv(links_path, comment="#", sep="\t", header=None)
     df_links.columns=["Articles","Links"]

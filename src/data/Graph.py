@@ -5,7 +5,9 @@ import matplotlib.pyplot as plt
 from sentence_transformers.util import dot_score
 
 def articles_to_embeddings(parsed_articles, model):
-    
+    """
+    Returns a dictionary with the article titles as keys and the embeddings of the title and description as values
+    """
     df = pd.DataFrame(parsed_articles, columns=['Article_Title', 'Related_Subjects', 'Description'])
     df['Article_Title_embedding'] = df['Article_Title'].apply(model.encode, engine='numba', engine_kwargs={'parallel':True})
     df['Description_embedding'] = df['Description'].apply(model.encode, engine='numba', engine_kwargs={'parallel':True})
@@ -15,7 +17,9 @@ def articles_to_embeddings(parsed_articles, model):
 
 def create_graph(embedded_articles, df_links):
     """
-    Returns G, the connected graph of the selected articles  
+    Returns G, the connected graph of the selected articles with the features:
+    - Nodes: Article titles, with attributes for the embeddings of the title and description
+    - Edges: Links between articles, with weights based on cosine similarity of the embeddings
     """
     G = nx.DiGraph()
 
@@ -25,7 +29,7 @@ def create_graph(embedded_articles, df_links):
 
 
     # Add edges to the graph
-    for index, row in df_links.iterrows():
+    for _, row in df_links.iterrows():
         article = row['Articles']
         links = row['Links']
         for link in links:
@@ -50,7 +54,13 @@ def create_graph(embedded_articles, df_links):
 
 def analyze_graph_statistics(G):
     """
-    In this function, some characteristics of the graph are computed 
+    In this function, these graph characteristics are computed and displayed:
+    - Number of nodes and edges
+    - Average degree
+    - Degree distribution
+    - Network density
+    - Clustering coefficient
+    - Average shortest path length
     """
     # Number of nodes and edges
     num_nodes = G.number_of_nodes()
@@ -67,11 +77,13 @@ def analyze_graph_statistics(G):
     plt.ylabel("Occurances")
     plt.title("Degree Distribution")
     plt.show()
+
     # Network density
     density = nx.density(G)
 
     # Clustering coefficient
     clustering_coeff = nx.average_clustering(G)
+
     #Average shortest path length
     avg_path_length = nx.average_shortest_path_length(G)
 
