@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import networkx as nx
+import matplotlib.pyplot as plt
 from sentence_transformers.util import dot_score
 
 def articles_to_embeddings(parsed_articles, model):
@@ -46,4 +47,49 @@ def create_graph(embedded_articles, df_links):
                 print(f"Article {article} or {link} couldn't be found")
 
     return G 
-    
+
+def analyze_graph_statistics(G):
+    """
+    In this function, some characteristics of the graph are computed 
+    """
+    # Number of nodes and edges
+    num_nodes = G.number_of_nodes()
+    num_edges = G.number_of_edges()
+
+    #average degree
+    degrees = [deg for _,deg in G.degree()]
+    average_deg=np.mean(degrees)
+
+    # Degree distribution
+    plt.figure()
+    plt.hist(degrees,bins=40,log=True,edgecolor='black')
+    plt.xlabel("Nodes Degrees")
+    plt.ylabel("Occurances")
+    plt.title("Degree Distribution")
+    plt.show()
+    # Network density
+    density = nx.density(G)
+
+    # Clustering coefficient
+    clustering_coeff = nx.average_clustering(G)
+    #Average shortest path length
+    avg_path_length = nx.average_shortest_path_length(G)
+
+    #Print results
+    print(f"Number of nodes: {num_nodes}")
+    print(f"Number of edges: {num_edges}")
+    print(f"Average degree: {average_deg:.2f}")
+    print(f"Network density: {density:.4f}")
+    print(f"Clustering coefficient: {clustering_coeff:.4f}")
+    print(f"Average Shortest path: {avg_path_length:.4f}")
+
+
+def weisfeiler_lehman_step(graph, labels):
+    """Perform one WL iteration on the graph and return updated labels."""
+    new_labels = {}
+    for node in graph.nodes():
+        # Create a multi-set label combining the node's current label and its neighbors' labels
+        neighborhood = [labels[neighbor] for neighbor in graph.neighbors(node)]
+        neighborhood.sort()
+        new_labels[node] = hash((labels[node], tuple(neighborhood)))
+    return new_labels
