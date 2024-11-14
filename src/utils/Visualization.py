@@ -29,31 +29,12 @@ def visualize_graph(G):
     #plt.savefig("graph.png", dpi=1000)  
     plt.show()
 
-def visualize_connected_node_similarity_distributions(G):
+def visualize_node_similarity_distributions(G, subset_size=350, y_max = 12000, seed=1):
+    weight_titles_connected = [data['weight_title'] for _, _, data in G.edges(data=True)]
+    weight_descriptions_connected = [data['weight_description'] for _, _, data in G.edges(data=True)]
+    
+    random.seed(seed)
 
-    weight_titles = [data['weight_title'] for _, _, data in G.edges(data=True)]
-
-    # Plot the histogram
-    plt.figure(figsize=(10, 6))
-    plt.hist(weight_titles, bins=50, edgecolor='black') 
-    plt.title('Distribution of Cosine Similarity in Article Titles Between Connected Nodes')
-    plt.xlabel('Cosine Similarity')
-    plt.ylabel('Number of Occurrences')
-    plt.grid(axis='y', alpha=0.75)
-    plt.show()
-
-    weight_description = [data['weight_description'] for _, _, data in G.edges(data=True)]
-
-    # Plot the histogram
-    plt.figure(figsize=(10, 6))
-    plt.hist(weight_description, bins=50, edgecolor='black') 
-    plt.title('Distribution of Cosine Similarity in Article Description Between Connected Nodes')
-    plt.xlabel('Cosine Similarity')
-    plt.ylabel('Number of Occurrences')
-    plt.grid(axis='y', alpha=0.75)
-    plt.show()
-
-def visualize_unconnected_node_similarity_distributions(G, subset_size=350):
     all_nodes = list(G.nodes)
     subset_nodes = random.sample(all_nodes, subset_size)
 
@@ -69,7 +50,11 @@ def visualize_unconnected_node_similarity_distributions(G, subset_size=350):
     unconnected_pairs = all_pairs - connected_pairs
 
     # Calculate cosine similarities for unconnected pairs
-    similarities = []
+    unconnected_similarities = []
+    weight_titles_unconnected = []
+    weight_descriptions_unconnected = []
+
+
     for source, target in unconnected_pairs:
         embedding_title_source = subgraph.nodes[source]['embedding_title']
         embedding_description_source = subgraph.nodes[source]['embedding_description']
@@ -79,90 +64,73 @@ def visualize_unconnected_node_similarity_distributions(G, subset_size=350):
         cosine_title = float(dot_score(embedding_title_source, embedding_title_target))
         cosine_description = float(dot_score(embedding_description_source, embedding_description_target))
 
-        similarities.append({
+        weight_titles_unconnected.append(cosine_title)
+        weight_descriptions_unconnected.append(cosine_description)
+
+        unconnected_similarities.append({
             'source': source,
             'target': target,
             'title_similarity': cosine_title,
             'description_similarity': cosine_description
         })
-
-    # Visualization for connected nodes
-    weight_titles = [s['title_similarity'] for s in similarities]
-    weight_descriptions = [s['description_similarity'] for s in similarities]
-
+    
+    
     # Plot the histograms
-    plt.figure(figsize=(10, 6))
-    plt.hist(weight_titles, bins=50, edgecolor='black')
-    plt.title('Distribution of Cosine Similarity in Article Titles Between Unconnected Nodes')
-    plt.xlabel('Cosine Similarity')
-    plt.ylabel('Number of Occurrences')
-    plt.grid(axis='y', alpha=0.75)
+    all_weights_titles = weight_titles_connected + weight_titles_unconnected
+    all_weights_descriptions = weight_descriptions_connected + weight_descriptions_unconnected
+
+    x_min = min(min(all_weights_titles), min(all_weights_descriptions))
+    x_max = max(max(all_weights_titles), max(all_weights_descriptions))
+
+    
+    fig, axes = plt.subplots(2, 2, figsize=(14, 10))
+    fig.suptitle('Distribution of Cosine Similarity for Connected and Unconnected Nodes', fontsize=18)
+
+    axes[0, 0].hist(weight_titles_connected, bins=50, edgecolor='black') 
+    axes[0, 0].set_title('Connected Nodes - Title Similarity')
+    axes[0, 0].set_xlabel('Cosine Similarity')
+    axes[0, 0].set_ylabel('Number of Occurrences')
+    axes[0, 0].grid(axis='y', alpha=0.75)
+    axes[0, 0].set_xlim(x_min, x_max)
+    axes[0, 0].set_ylim(0, y_max)
+
+    axes[0, 1].hist(weight_descriptions_connected, bins=50, edgecolor='black') 
+    axes[0, 1].set_title('Connected Nodes - Description Similarity')
+    axes[0, 1].set_xlabel('Cosine Similarity')
+    axes[0, 1].set_ylabel('Number of Occurrences')
+    axes[0, 1].grid(axis='y', alpha=0.75)
+    axes[0, 1].set_xlim(x_min, x_max)
+    axes[0, 1].set_ylim(0, y_max)
+
+    axes[1, 0].hist(weight_titles_unconnected, bins=50, edgecolor='black')
+    axes[1, 0].set_title('Unconnected Nodes - Title Similarity')
+    axes[1, 0].set_xlabel('Cosine Similarity')
+    axes[1, 0].set_ylabel('Number of Occurrences')
+    axes[1, 0].grid(axis='y', alpha=0.75)
+    axes[1, 0].set_xlim(x_min, x_max)
+    axes[1, 0].set_ylim(0, y_max)
+
+    axes[1, 1].hist(weight_descriptions_unconnected, bins=50, edgecolor='black')
+    axes[1, 1].set_title('Unconnected Nodes - Description Similarity')
+    axes[1, 1].set_xlabel('Cosine Similarity')
+    axes[1, 1].set_ylabel('Number of Occurrences')
+    axes[1, 1].grid(axis='y', alpha=0.75)
+    axes[1, 1].set_xlim(x_min, x_max)
+    axes[1, 1].set_ylim(0, y_max)
+
+    plt.tight_layout(rect=[0, 0.03, 1, 0.95])
     plt.show()
-
-    plt.figure(figsize=(10, 6))
-    plt.hist(weight_descriptions, bins=50, edgecolor='black')
-    plt.title('Distribution of Cosine Similarity in Article Descriptions Between Unconnected Nodes')
-    plt.xlabel('Cosine Similarity')
-    plt.ylabel('Number of Occurrences')
-    plt.grid(axis='y', alpha=0.75)
-    plt.show()
-
-    return similarities
-
-
-def storing_cosine_similarties(G, subset_size=350):
-    # Lists for storing cosine similarities
-    connected_titles_similarities = []
-    connected_descriptions_similarities = []
-    unconnected_titles_similarities = []
-    unconnected_descriptions_similarities = []
-
-    # Cosine similarity for connected nodes
-    for _, _, data in G.edges(data=True):
-        connected_titles_similarities.append(data['weight_title'])
-        connected_descriptions_similarities.append(data['weight_description'])
-
-    # Cosine similarity for unconnected nodes
-    all_nodes = list(G.nodes)
-    subset_nodes = random.sample(all_nodes, subset_size)
-    subgraph = G.subgraph(subset_nodes)
-
-    connected_pairs = set()
-    for u, v in subgraph.edges():
-        connected_pairs.add((u, v))
-        connected_pairs.add((v, u))
-
-    # Find all unconnected article pairs in the subgraph
-    all_pairs = set((a, b) for a in subset_nodes for b in subset_nodes if a != b)
-    unconnected_pairs = all_pairs - connected_pairs
-
-    # Calculate cosine similarities for unconnected pairs
-    for source, target in unconnected_pairs:
-        embedding_title_source = subgraph.nodes[source]['embedding_title']
-        embedding_description_source = subgraph.nodes[source]['embedding_description']
-        embedding_title_target = subgraph.nodes[target]['embedding_title']
-        embedding_description_target = subgraph.nodes[target]['embedding_description']
-        
-
-        # for articles title
-        cosine_title = cosine_similarity([embedding_title_source], [embedding_title_target])[0, 0]
-        unconnected_titles_similarities.append(cosine_title)
-
-        # for articles description
-        cosine_description = cosine_similarity([embedding_description_source], [embedding_description_target])[0, 0]
-        unconnected_descriptions_similarities.append(cosine_description)
-
 
     return {
-        'connected_titles': connected_titles_similarities,
-        'connected_descriptions': connected_descriptions_similarities,
-        'unconnected_titles': unconnected_titles_similarities,
-        'unconnected_descriptions': unconnected_descriptions_similarities
-    }
+        'connected_titles': weight_titles_connected,
+        'connected_descriptions': weight_descriptions_connected,
+        'unconnected_titles': weight_titles_unconnected,
+        'unconnected_descriptions': weight_descriptions_unconnected,
+        'unconnected_pairs': unconnected_similarities
+        }
 
 
-def visualize_connected_vs_unconnected_cs_distribution(G):
-    similarities = storing_cosine_similarties(G)
+def visualize_connected_vs_unconnected_cs_distribution(G, similarities):
     # Box plots for titles
     plt.figure(figsize=(10, 5))
     sns.boxplot(data=[similarities['connected_titles'], similarities['unconnected_titles']])
@@ -180,8 +148,8 @@ def visualize_connected_vs_unconnected_cs_distribution(G):
     plt.show()
 
 
-def calculate_links_conditional_proba(G):
-    similarities = storing_cosine_similarties(G)
+def calculate_links_conditional_proba(G, similarities):
+
     # Define similarity bins 
     bins = np.arange(-0.4, 1.05, 0.05)
 
