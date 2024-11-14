@@ -66,9 +66,41 @@ Notably, it will aid in the navigation between articles, as users can more easil
 
 #### Graph features
 
-###
+### Training/Validation/Testing Sample Choice
 
-### 
-First, we will use the existing links as positive examples, labeling them as 1. For unconnected article pairs, we will calculate a "negative likelihood" score based on features like content similarity, common neighbors, and node distance. Pairs with a high negative likelihood score will be treated as negative examples, labeled as 0. The remaining unconnected pairs will be left as unknown.
+We will begin by using existing links as positive examples, labeled as 1. To identify unconnected pairs that are unlikely to represent missing links, we apply a **negative likelihood score**. This score helps select unconnected pairs that are more likely to be true non-links, labeling them as 0. By leveraging feature distributions, this approach effectively classifies unconnected pairs as negative examples.
 
-By training the GNN model on this mixture of positive and negative examples, it will learn to distinguish likely links from unlikely ones. The trained model can then be applied to the full set of article pairs, including the unknown connections, to predict the probability of a link. This approach allows us to uncover missing links that could enhance the coherence and navigability of the Wikipedia knowledge graph, while avoiding the biases inherent in manually curated links.
+1. **Distribution-Based Scoring**: Each feature (node distance, content similarity, common neighbors) is analyzed for its distribution among connected and unconnected pairs. Some examples are:
+   - **Node Distance**: Connected pairs generally have a lower average distance.
+   - **Content Similarity**: Connected pairs often exhibit higher content similarity scores.
+   - **Common Neighbors**: Connected pairs usually share a greater number of common neighbors.
+
+2. **Negative Likelihood Score Calculation**: Based on the feature distributions, a **negative likelihood score** is assigned to unconnected pairs. This score weights each feature according to its contribution to low connection likelihood.
+
+3. **Threshold for Negative Examples**: A threshold is set for the negative likelihood score. Unconnected pairs with scores above this threshold are designated as negative examples (label 0) during training and validation, helping the model learn distinctions between likely and unlikely connections. A second threshold is then also set where all the unconnected pairs with scores below this threshold are considered as candidates for link prediction.
+
+### Graph Convolutional Network
+
+The model is based on a Graph Convolutional Network (GCN), a widely used architecture for graph-based learning. In this setup, node features are concatenated with one another to create enriched node representations, while edge features are also concatenated separately to capture relationship-specific information. These processed node and edge features are passed through multiple GCN layers to learn complex patterns within the graph. Finally, a Multi-Layer Perceptron (MLP) takes the combined outputs of these layers to produce a score between 0 and 1, indicating the likelihood of a link between each node pair.
+
+Other models have been considered, for example the Graph Attention Network (GAT) and GraphSAGE. GATs have a more complex architecture using an attention mechanism to put more/less importance in different features of the graph. But due to the heavier computational cost, and the fact that we already have the edge features providing a form of importance weighting between nodes, we have opted for GCNs. GraphSAGE wasn't considered since it was specifically designed for evolving graphs, but that feature wasn't necessary for our single fixed graph.
+
+## Proposed Timeline
+
+- **15-22 Nov**: Focus on completing Homework 2.
+- **23-29 Nov**: 
+  - Finish Homework 2.
+  - Start building the dataloaders and defining the model architecture.
+- **30 Nov - 6 Dec**: 
+  - Train the model using various configurations and feature sets.
+- **7-13 Dec**: 
+  - Perform tests on the new graphs created with human navigation traces.
+- **14-20 Dec**: 
+  - Apply final adjustments and complete final touches.
+
+## Organization within the team
+
+## Questions for TAs
+
+- Is the model choice good?
+- Is our method for the Training/Validation samples and candidates choice for prediction a good approach or are there some other methods?
