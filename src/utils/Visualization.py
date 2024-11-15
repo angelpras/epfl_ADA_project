@@ -184,7 +184,7 @@ def calculate_links_conditional_proba(G, similarities):
     plt.bar(df_descriptions['bin_center'], df_descriptions['p(link|similarity)'], width=0.05, color='skyblue', edgecolor='black')
     plt.xlabel('Cosine similarity')
     plt.ylabel('Estimated probability of a link between two random nodes')
-    plt.title('Estimated probability of a link between two random nodes according to cosine similary with articles descriptions')
+    plt.title('Estimated probability of a link between two random nodes according to cosine similarity distribution with articles descriptions')
     plt.ylim(0, 1)
     plt.grid(axis='y', linestyle='--', alpha=0.7)
     plt.show()
@@ -193,12 +193,12 @@ def calculate_links_conditional_proba(G, similarities):
     plt.bar(df_titles['bin_center'], df_titles['p(link|similarity)'], width=0.05, color='skyblue', edgecolor='black')
     plt.xlabel('Cosine similarity')
     plt.ylabel('Estimated probability of a link between two random nodes')
-    plt.title('Estimated probability of a link between two random nodes according to cosine similary with articles titles')
+    plt.title('Estimated probability of a link between two random nodes according to cosine similarity distribution with articles titles')
     plt.ylim(0, 1)
     plt.grid(axis='y', linestyle='--', alpha=0.7)
     plt.show()
 
-def calculate_preferential_attachment1(G):
+def calculate_preferential_attachment(G):
     ############ Connected Nodes ############
     G_connected_undirected = G.to_undirected()
     attachment_connected_vals = nx.preferential_attachment(G_connected_undirected)
@@ -268,7 +268,7 @@ def calculate_preferential_attachment1(G):
     plt.tight_layout()
     plt.show()
 
-def calculate_preferential_attachment2(G):
+def calculate_preferential_attachment_unconnected_zoomed(G):
     ############ Connected Nodes ############
     G_connected_undirected = G.to_undirected()
     attachment_connected_vals = nx.preferential_attachment(G_connected_undirected)
