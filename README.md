@@ -68,20 +68,20 @@ To maximize the performance of our GNN, we designed features that capture variou
 
 #### Node (articles) features
 
-PageRank: Assigns a ranking score to each node, indicating its relative importance in the network.
-Eigenvector Centrality: Measures a node's influence within the graph based on its connections.
-Text Embeddings: We embed article titles and descriptions using vector representations to calculate cosine similarity between pairs of nodes.
-Common Neighbors: Quantifies the overlap in the neighborhood between pairs of nodes.
+- PageRank: Assigns a ranking score to each node, indicating its relative importance in the network.
+- Eigenvector Centrality: Measures a node's influence within the graph based on its connections.
+- Text Embeddings: We embed article titles and descriptions using vector representations to calculate cosine similarity between pairs of nodes.
+- Common Neighbors: Quantifies the overlap in the neighborhood between pairs of nodes.
 
 #### Edge features
 
-Jaccard Similarity: Measures the proportion of shared neighbors between two nodes.
-Adamic-Adar Index: A weighted sum of shared neighbors, placing more weight on less-connected nodes.
-Preferential Attachment: Predicts links based on the degree of the nodes.
+- Jaccard Similarity: Measures the proportion of shared neighbors between two nodes.
+- Adamic-Adar Index: A weighted sum of shared neighbors, placing more weight on less-connected nodes.
+- Preferential Attachment: Predicts links based on the degree of the nodes.
 
 #### Graph features
 
-Node2Vec: Generates node embeddings that capture graph structure and connectivity by exploring random walks.
+- Node2Vec: Generates node embeddings that capture graph structure and connectivity by exploring random walks.
 
 ### Training/Validation/Testing Sample Choice
 
