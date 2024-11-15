@@ -497,3 +497,38 @@ def calculate_adamic_adar(G):
     plt.tight_layout()
     plt.show()
 
+
+def analyze_graph_statistics(G):
+    """
+    In this function, some characteristics of the graph are computed 
+    """
+    # Number of nodes and edges
+    num_nodes = G.number_of_nodes()
+    num_edges = G.number_of_edges()
+
+    #average degree
+    degrees = [deg for _,deg in G.degree()]
+    average_deg=np.mean(degrees)
+
+    # Degree distribution
+    plt.figure()
+    plt.hist(degrees,bins=40,log=True,edgecolor='black')
+    plt.xlabel("Nodes Degrees")
+    plt.ylabel("Occurences")
+    plt.title("Degree Distribution")
+    plt.show()
+    # Network density
+    density = nx.density(G)
+
+    # Clustering coefficient
+    clustering_coeff = nx.average_clustering(G)
+    #Average shortest path length
+    avg_path_length = nx.average_shortest_path_length(G)
+
+    #Print results
+    print(f"Number of nodes: {num_nodes}")
+    print(f"Number of edges: {num_edges}")
+    print(f"Average degree: {average_deg:.2f}")
+    print(f"Network density: {density:.4f}")
+    print(f"Clustering coefficient: {clustering_coeff:.4f}")
+    print(f"Average Shortest path: {avg_path_length:.4f}")
