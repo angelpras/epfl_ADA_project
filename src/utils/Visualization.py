@@ -29,7 +29,7 @@ def visualize_graph(G):
     #plt.savefig("graph.png", dpi=1000)  
     plt.show()
 
-def visualize_node_similarity_distributions(G, subset_size=350, y_max = 12000, seed=1):
+def visualize_node_similarity_distributions(G, subset_size=350, y_max = 12500, seed=1):
     weight_titles_connected = [data['weight_title'] for _, _, data in G.edges(data=True)]
     weight_descriptions_connected = [data['weight_description'] for _, _, data in G.edges(data=True)]
     
