@@ -55,16 +55,33 @@ Notably, it will aid in the navigation between articles, as users can more easil
 - What are the most descriptive features/heuristic methods to infer links between two articles?
 - Do additional links provided by a missing link predictor model aid in the human navigation between articles?
 - Can the GNN model effectively handle large-scale Wikipedia article networks, or are there scalability challenges that need to be addressed for real-world use?
+- Are there specific types of articles or categories where link prediction is more or less accurate?
 
 ## Methods
 
+In order to train the GNN in an optimal way, our approach consists in leveraging a combination of node,edge, and graph-level features. A robust way to assign labels, for the presence/absence of link between a pair of node, is also proposed, for the training part. 
+Below is an outline of our approach for feature engineering and the training/validation/testing process.
+
 ### Feature engineering
+
+To maximize the performance of our GNN, we designed features that capture various aspects of the graph structure. Of course, there are others interesting ways to design features, that could be studied if the model performances are found to be not be satisfaying.
 
 #### Node (articles) features
 
+PageRank: Assigns a ranking score to each node, indicating its relative importance in the network.
+Eigenvector Centrality: Measures a node's influence within the graph based on its connections.
+Text Embeddings: We embed article titles and descriptions using vector representations to calculate cosine similarity between pairs of nodes.
+Common Neighbors: Quantifies the overlap in the neighborhood between pairs of nodes.
+
 #### Edge features
 
+Jaccard Similarity: Measures the proportion of shared neighbors between two nodes.
+Adamic-Adar Index: A weighted sum of shared neighbors, placing more weight on less-connected nodes.
+Preferential Attachment: Predicts links based on the degree of the nodes.
+
 #### Graph features
+
+Node2Vec: Generates node embeddings that capture graph structure and connectivity by exploring random walks.
 
 ### Training/Validation/Testing Sample Choice
 
@@ -103,4 +120,5 @@ Other models have been considered, for example the Graph Attention Network (GAT)
 ## Questions for TAs
 
 - Is the model choice good?
+- What others features could be implemented ? 
 - Is our method for the Training/Validation samples and candidates choice for prediction a good approach or are there some other methods?
