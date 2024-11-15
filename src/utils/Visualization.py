@@ -184,7 +184,7 @@ def calculate_links_conditional_proba(G, similarities):
     plt.bar(df_descriptions['bin_center'], df_descriptions['p(link|similarity)'], width=0.05, color='skyblue', edgecolor='black')
     plt.xlabel('Cosine similarity')
     plt.ylabel('Estimated probability of a link between two random nodes')
-    plt.title('Estimated probability of a link between two random nodes according to cosine similary with articles descriptions')
+    plt.title('Estimated probability of a link between two random nodes according to cosine similarity distribution with articles descriptions')
     plt.ylim(0, 1)
     plt.grid(axis='y', linestyle='--', alpha=0.7)
     plt.show()
@@ -193,7 +193,7 @@ def calculate_links_conditional_proba(G, similarities):
     plt.bar(df_titles['bin_center'], df_titles['p(link|similarity)'], width=0.05, color='skyblue', edgecolor='black')
     plt.xlabel('Cosine similarity')
     plt.ylabel('Estimated probability of a link between two random nodes')
-    plt.title('Estimated probability of a link between two random nodes according to cosine similary with articles titles')
+    plt.title('Estimated probability of a link between two random nodes according to cosine similarity distribution with articles titles')
     plt.ylim(0, 1)
     plt.grid(axis='y', linestyle='--', alpha=0.7)
     plt.show()
@@ -207,6 +207,7 @@ def calculate_preferential_attachment(G):
     ############ Unconnected Nodes ############
     subset_size = 350
     all_nodes = list(G.nodes)
+    random.seed(1)
     subset_nodes = random.sample(all_nodes, subset_size)
 
     # Create a subgraph with the subset of nodes
@@ -227,15 +228,22 @@ def calculate_preferential_attachment(G):
 
     ############ Plotting Preferential Score Frequency and Values per Node Pairs ############
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6)) 
-    fig.suptitle('Preferential Attachment Scores for Connected Pairs', fontsize=16)
+    fig.suptitle('Preferential Attachment Scores for Connected Pairs | Same x-axis', fontsize=16)
     ax1.hist(attachment_connected_scores, bins=50, color='skyblue', edgecolor='black')
     ax1.set_title('Preferential Attachment Scores for Node Pairs | Connected Pairs')
     ax1.set_xlabel('Preferential Attachment Score')
     ax1.set_ylabel('Frequency')
+    ax1.set_yscale('log')
+    #ax1.set_xscale('log')
+    ax1.set_xlim(0,np.max(attachment_connected_scores))
+    ax1.set_ylim(1e0, 1e7)
     ax2.scatter(range(len(attachment_connected_scores)), attachment_connected_scores, color='blue', alpha=0.5)
     ax2.set_title('Preferential Attachment Scores for Node Pairs | Connected Pairs')
     ax2.set_xlabel('Node Pair Index')
     ax2.set_ylabel('Preferential Attachment Score')
+    ax2.set_ylim(0,np.max(attachment_connected_scores))
+    #ax2.set_yscale('log')
+    #ax2.set_xscale()
     plt.tight_layout()
     plt.show()
 
@@ -245,12 +253,70 @@ def calculate_preferential_attachment(G):
     ax1.set_title('Distribution of Preferential Attachment Scores | Graph Subset | Unconnected Pairs')
     ax1.set_xlabel('Preferential Attachment Score')
     ax1.set_ylabel('Frequency')
+    ax1.set_yscale('log')
+    #ax1.set_xscale('log')
+    ax1.set_xlim(0,np.max(attachment_connected_scores))
+    ax1.set_ylim(1e0, 1e7)
+
+    #ax1.set_xlim(0,np.max(attachment_connected_scores))
     ax2.scatter(range(len(attachment_unconnected_scores)), attachment_unconnected_scores, color='blue', alpha=0.5)
     ax2.set_title('Preferential Attachment Scores for Node Pairs | Graph Subset | Unconnected Pairs')
     ax2.set_xlabel('Node Pair Index')
     ax2.set_ylabel('Preferential Attachment Score')
+    ax2.set_ylim(0,np.max(attachment_connected_scores))
+    #ax2.set_yscale('log')
     plt.tight_layout()
     plt.show()
+
+def calculate_preferential_attachment_unconnected_zoomed(G):
+    ############ Connected Nodes ############
+    G_connected_undirected = G.to_undirected()
+    attachment_connected_vals = nx.preferential_attachment(G_connected_undirected)
+    attachment_connected_scores = [p for _, _, p in attachment_connected_vals]
+
+    ############ Unconnected Nodes ############
+    subset_size = 350
+    all_nodes = list(G.nodes)
+    random.seed(1)
+    subset_nodes = random.sample(all_nodes, subset_size)
+
+    # Create a subgraph with the subset of nodes
+    subgraph = G.subgraph(subset_nodes)
+    connected_pairs = set()
+    for u, v in subgraph.edges():
+        if u < v:
+            connected_pairs.add((u, v))
+        else:
+            connected_pairs.add((v, u))
+
+    # Find all unconnected article pairs in the subgraph
+    all_pairs = set((a, b) for a in subset_nodes for b in subset_nodes if a < b)
+    unconnected_pairs = all_pairs - connected_pairs
+    # Remove direction and find attachment scores for unconnected nodes
+    subgraph_undirected = subgraph.to_undirected()
+    attachment_unconnected_scores = [score for _, _, score in nx.preferential_attachment(subgraph_undirected, ebunch=unconnected_pairs)]
+
+    ############ Plotting Preferential Score Frequency and Values per Node Pairs ############
+    
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6)) 
+    fig.suptitle('Preferential Attachment Scores for Unconnected Pairs', fontsize=16)
+    ax1.hist(attachment_unconnected_scores, bins=50, color='skyblue', edgecolor='black')
+    ax1.set_title('Distribution of Preferential Attachment Scores | Graph Subset | Unconnected Pairs')
+    ax1.set_xlabel('Preferential Attachment Score')
+    ax1.set_ylabel('Frequency')
+    ax1.set_yscale('log')
+    #ax1.set_xscale('log')
+    ax1.set_ylim(1e0, 1e7)
+    #ax1.set_xlim(0,np.max(attachment_connected_scores))
+    #ax1.set_xlim(0,np.max(attachment_connected_scores))
+    ax2.scatter(range(len(attachment_unconnected_scores)), attachment_unconnected_scores, color='blue', alpha=0.5)
+    ax2.set_title('Preferential Attachment Scores for Node Pairs | Graph Subset | Unconnected Pairs')
+    ax2.set_xlabel('Node Pair Index')
+    ax2.set_ylabel('Preferential Attachment Score')
+    #ax2.set_yscale('log')
+    plt.tight_layout()
+    plt.show()
+
 
 def calculate_common_neighbors(G):
     ############ Connected Nodes ############
@@ -264,6 +330,7 @@ def calculate_common_neighbors(G):
     ############ Unconnected Nodes ############
     subset_size = 350
     all_nodes = list(G.nodes)
+    random.seed(1)
     subset_nodes = random.sample(all_nodes, subset_size)
 
     # Create a subgraph with the subset of nodes
@@ -293,10 +360,16 @@ def calculate_common_neighbors(G):
     ax1.set_title('Distribution of Common Neighbors | Connected Pairs')
     ax1.set_xlabel('Number of Common Neighbors')
     ax1.set_ylabel('Frequency')
+    ax1.set_yscale('log')
+    ax1.set_xlim(0,np.max(common_neighbors_connected_counts))
+    ax1.set_ylim(1e0,1e5)
+    #ax1.set_xlim(0,np.max(common_neighbors_connected_counts)/3)
     ax2.hist(common_neighbors_unconnected_counts, bins=50, edgecolor='black')
     ax2.set_title('Distribution of Common Neighbors | Unconnected Pairs')
     ax2.set_xlabel('Number of Common Neighbors')
     ax2.set_ylabel('Frequency')
+    ax2.set_yscale('log')
+    ax2.set_ylim(1e0,1e5)
     ax2.set_xlim(0,np.max(common_neighbors_connected_counts))
     plt.tight_layout()
     plt.show()
@@ -310,6 +383,7 @@ def calculate_jaccards_coeff(G):
     ############ Unconnected Nodes ############
     subset_size = 350
     all_nodes = list(G.nodes)
+    random.seed(1)
     subset_nodes = random.sample(all_nodes, subset_size)
 
     # Create a subgraph with the subset of nodes
@@ -326,7 +400,7 @@ def calculate_jaccards_coeff(G):
     unconnected_pairs = all_pairs - connected_pairs
     # Remove direction and find attachment scores for unconnected nodes
     subgraph_undirected = subgraph.to_undirected()
-    jaccard_unconnected_scores = [score for _, _, score in nx.preferential_attachment(subgraph_undirected, ebunch=unconnected_pairs)]
+    jaccard_unconnected_scores = [score for _, _, score in nx.jaccard_coefficient(subgraph_undirected, ebunch=unconnected_pairs)]
 
     ############ Plotting Jaccard's Coefficient Frequency and Values per Node Pairs ############
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6)) 
@@ -335,6 +409,9 @@ def calculate_jaccards_coeff(G):
     ax1.set_title('Distribution of Jaccard\'s Coefficient for Node Pairs | Connected Pairs')
     ax1.set_xlabel('Jaccard\'s Coefficient')
     ax1.set_ylabel('Frequency')
+    ax1.set_yscale('log')
+    ax1.set_ylim(1e0,1e7)
+    ax1.set_xlim(0,np.max(jaccard_connected_scores))
     ax2.scatter(range(len(jaccard_connected_scores)), jaccard_connected_scores, color='blue', alpha=0.5)
     ax2.set_title('Jaccard\'s Coefficient for Node Pairs | Connected Pairs')
     ax2.set_xlabel('Node Pair Index')
@@ -348,6 +425,9 @@ def calculate_jaccards_coeff(G):
     ax1.set_title('Distribution of Jaccard\'s Coefficient | Graph Subset | Unconnected Pairs')
     ax1.set_xlabel('Jaccard\'s Coefficient')
     ax1.set_ylabel('Frequency')
+    ax1.set_yscale('log')
+    ax1.set_ylim(1e0,1e7)
+    ax1.set_xlim(0,np.max(jaccard_connected_scores))
     ax2.scatter(range(len(jaccard_unconnected_scores)), jaccard_unconnected_scores, color='blue', alpha=0.5)
     ax2.set_title('Jaccard\'s Coefficient for Node Pairs | Graph Subset | Unconnected Pairs')
     ax2.set_xlabel('Node Pair Index')
@@ -364,6 +444,7 @@ def calculate_adamic_adar(G):
     ############ Unconnected Nodes ############
     subset_size = 350
     all_nodes = list(G.nodes)
+    random.seed(1)
     subset_nodes = random.sample(all_nodes, subset_size)
 
     # Create a subgraph with the subset of nodes
@@ -389,6 +470,9 @@ def calculate_adamic_adar(G):
     ax1.set_title('Distribution of Adamic/Adar Coefficient for Node Pairs | Connected Pairs')
     ax1.set_xlabel('Adamic/Adar Coefficient')
     ax1.set_ylabel('Frequency')
+    ax1.set_yscale('log')
+    ax1.set_ylim(1e0,1e7)
+    ax1.set_xlim(0,np.max(adar_connected_scores))
     ax2.scatter(range(len(adar_connected_scores)), adar_connected_scores, color='blue', alpha=0.5)
     ax2.set_title('Adamic/Adar Coefficient for Node Pairs | Connected Pairs')
     ax2.set_xlabel('Node Pair Index')
@@ -402,10 +486,48 @@ def calculate_adamic_adar(G):
     ax1.set_title('Distribution of Adamic/Adar Coefficient | Graph Subset | Unconnected Pairs')
     ax1.set_xlabel('Adamic/Adar Coefficient')
     ax1.set_ylabel('Frequency')
+    ax1.set_yscale('log')
+    ax1.set_ylim(1e0,1e7)
+    ax1.set_xlim(0,np.max(adar_connected_scores))
     ax2.scatter(range(len(adar_unconnected_scores)), adar_unconnected_scores, color='blue', alpha=0.5)
     ax2.set_title('Adamic/Adar Coefficient for Node Pairs | Graph Subset | Unconnected Pairs')
     ax2.set_xlabel('Node Pair Index')
     ax2.set_ylabel('Adamic/Adar Coefficient')
+    ax2.set_ylim(0,np.max(adar_connected_scores))
     plt.tight_layout()
     plt.show()
 
+def analyze_graph_statistics(G):
+    """
+    In this function, some characteristics of the graph are computed 
+    """
+    # Number of nodes and edges
+    num_nodes = G.number_of_nodes()
+    num_edges = G.number_of_edges()
+
+    #average degree
+    degrees = [deg for _,deg in G.degree()]
+    average_deg=np.mean(degrees)
+
+    # Degree distribution
+    plt.figure()
+    plt.hist(degrees,bins=40,log=True,edgecolor='black')
+    plt.xlabel("Nodes Degrees")
+    plt.ylabel("Occurences")
+    plt.title("Degree Distribution")
+    plt.show()
+    # Network density
+    density = nx.density(G)
+
+    # Clustering coefficient
+    clustering_coeff = nx.average_clustering(G)
+    #Average shortest path length
+    avg_path_length = nx.average_shortest_path_length(G)
+
+    #Print results
+    print(f"Number of nodes: {num_nodes}")
+    print(f"Number of edges: {num_edges}")
+    print(f"Average degree: {average_deg:.2f}")
+    print(f"Network density: {density:.4f}")
+    print(f"Clustering coefficient: {clustering_coeff:.4f}")
+    print(f"Average Shortest path: {avg_path_length:.4f}")

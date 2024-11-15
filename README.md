@@ -59,29 +59,27 @@ Notably, it will aid in the navigation between articles, as users can more easil
 
 ## Methods
 
-In order to train the GNN in an optimal way, our approach consists in leveraging a combination of node,edge, and graph-level features. A robust way to assign labels, for the presence/absence of link between a pair of node, is also proposed, for the training part. 
-Below is an outline of our approach for feature engineering and the training/validation/testing process.
-
 ### Feature engineering
 
 To maximize the performance of our GNN, we designed features that capture various aspects of the graph structure. Of course, there are other interesting ways to design features, that could be studied if the model's performance is found to be unsatisfactory.
 
 #### Node (articles) features
 
-PageRank: Assigns a ranking score to each node, indicating its relative importance in the network.
-Eigenvector Centrality: Measures a node's influence within the graph based on its connections.
-Text Embeddings: We embed article titles and descriptions using vector representations to calculate cosine similarity between pairs of nodes.
-Common Neighbors: Quantifies the overlap in the neighborhood between pairs of nodes.
+- PageRank: Assigns a ranking score to each node, indicating its relative importance in the network.
+- Eigenvector Centrality: Measures a node's influence within the graph based on its connections.
+- Text Embeddings: We embed article titles and descriptions using vector representations.
+- Common Neighbors: Quantifies the overlap in the neighborhood between pairs of nodes.
 
 #### Edge features
 
-Jaccard Similarity: Measures the proportion of shared neighbors between two nodes.
-Adamic-Adar Index: A weighted sum of shared neighbors, placing more weight on less-connected nodes.
-Preferential Attachment: Predicts links based on the degree of the nodes.
+- Cosine similarity: Computed using the previously generated embeddings for articles and descriptions, it provides a measure of how similar two words or sentences are.
+- Jaccard Similarity: Measures the proportion of shared neighbors between two nodes.
+- Adamic-Adar Index: A weighted sum of shared neighbors, placing more weight on less-connected nodes.
+- Preferential Attachment: Predicts links based on the degree of the nodes.
 
 #### Graph features
 
-Node2Vec: Generates node embeddings that capture graph structure and connectivity by exploring random walks.
+- Node2Vec: Generates node embeddings that capture graph structure and connectivity by exploring random walks.
 
 ### Training/Validation/Testing Sample Choice
 
@@ -98,9 +96,9 @@ We will begin by using existing links as positive examples, labeled as 1. To ide
 
 ### Graph Convolutional Network
 
-The model is based on a Graph Convolutional Network (GCN), a widely used architecture for graph-based learning. In this setup, node features are concatenated with one another to create enriched node representations, while edge features are also concatenated separately to capture relationship-specific information. These processed node and edge features are passed through multiple GCN layers to learn complex patterns within the graph. Finally, a Multi-Layer Perceptron (MLP) takes the combined outputs of these layers to produce a score between 0 and 1, indicating the likelihood of a link between each node pair.
+The model uses a Graph Convolutional Network (GCN) to learn patterns within the graph. Node features are concatenated to create enriched representations, while edge features are concatenated separately to capture relationships. These features pass through multiple GCN layers, and a Multi-Layer Perceptron (MLP) generates a score between 0 and 1, indicating link likelihood between nodes.
 
-Other models have been considered, for example the Graph Attention Network (GAT) and GraphSAGE. GATs have a more complex architecture using an attention mechanism to put more/less importance in different features of the graph. But due to the heavier computational cost, and the fact that we already have the edge features providing a form of importance weighting between nodes, we have opted for GCNs. GraphSAGE wasn't considered since it was specifically designed for evolving graphs, but that feature wasn't necessary for our single fixed graph.
+Other models, like Graph Attention Networks (GATs) and GraphSAGE, were considered. GATs offer attention mechanisms for feature weighting but are computationally expensive, and edge features already provide importance weighting. GraphSAGE, designed for evolving graphs, wasn’t needed for this fixed graph.
 
 ## Proposed Timeline
 
@@ -108,14 +106,20 @@ Other models have been considered, for example the Graph Attention Network (GAT)
 - **23-29 Nov**: 
   - Finish Homework 2.
   - Start building the dataloaders and defining the model architecture.
+  - Build a test graph by connecting random nodes together.
 - **30 Nov - 6 Dec**: 
   - Train the model using various configurations and feature sets.
+  - Setup the pipeline to compare graphs together using the human traces.
 - **7-13 Dec**: 
   - Perform tests on the new graphs created with human navigation traces.
 - **14-20 Dec**: 
   - Apply final adjustments and complete final touches.
 
 ## Organization within the team
+
+- Alexis and Antoine: Build the model architecture, using the concatenated embeddings. Train the model.
+- Angeline and Nina: Build the dataloaders by building the negative likelihood score calculator and set the thresholds for label 0 (non-link) and candidates for missing link prediction. Determine the most useful features for the model, potentially making coefficients for the negative likelihood score calculator.
+- Alfred: Will work on graph evaluation. Builds the test graph to compare the orignal graph and have a pipeline in place. Use human traces to evaluate graph performance.
 
 ## Questions for TAs
 
