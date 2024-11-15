@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-%matplotlib inline
+# %matplotlib inline
 import seaborn as sns
 import math
 from collections import Counter
@@ -116,9 +116,16 @@ def stats_on_games(df):
     """
     Print statistics on the number of time same games are played
     """
-        
+    print("Number of different paths played:", len(df))    
     print("Mean number of time a path is played:", df['count'].mean())
     print("Median number of played path:", df['count'].median())
+
+    # Get the value counts of the 'count' column (how often each frequency occurs)
+    path_count_values = df['count'].value_counts()
+
+    # Print the counts of paths that were played only once
+    print(f"Paths that were played only once: {path_count_values.get(1, 0)}")
+
 
 def process_unfinished(filename):
     """
@@ -129,6 +136,10 @@ def process_unfinished(filename):
     columns = ['session_id', 'timestamp', 'duration', 'path', 'target', 'type']
 
     unfinished_paths = pd.read_csv(filename, sep='\t', skiprows=17, header=None, names=columns)
+
+    # Add number of pages visited for each game
+    unfinished_paths['num_pages_visited'] = unfinished_paths['path'].apply(lambda x: len(x.split(';')) if pd.notna(x) else 0)
+
 
     #Remove played paths ending on "Wikipidia GNU..."
     unfinished_paths['path_list'] = unfinished_paths['path'].str.split(';')
