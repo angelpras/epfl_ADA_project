@@ -3,6 +3,8 @@ import pandas as pd
 import networkx as nx
 import matplotlib.pyplot as plt
 from sentence_transformers.util import dot_score
+from node2vec import Node2Vec
+from sklearn.metrics.pairwise import cosine_similarity
 
 def articles_to_embeddings(parsed_articles, model):
     """
@@ -105,3 +107,52 @@ def weisfeiler_lehman_step(graph, labels):
         neighborhood.sort()
         new_labels[node] = hash((labels[node], tuple(neighborhood)))
     return new_labels
+
+
+def Node2Vec_func(G):
+    """
+    Generates node embeddings by simulating biased random walks through a graph
+    """
+    #The parameters below would be tuned, especially p and q to balance the DFS and BFS behavior
+    node2vec = Node2Vec(G, dimensions=128, walk_length=80, num_walks=10, p=1, q=1, workers=4)
+
+    # Learn the embeddings for the nodes in the graph
+    model = node2vec.fit()
+
+    # Get the node embeddings (for each node)
+    embeddings = model.wv
+
+    # Extract node embeddings and store them in a DataFrame
+    node_embeddings = []
+
+    for node in G.nodes():
+        try:
+            # Retrieve the embedding for the node
+            embedding = embeddings[node]
+            node_embeddings.append({"Article": node, "Embedding": embedding})
+        except KeyError:
+            # Handle case where node embedding might be missing
+            node_embeddings.append({"Article": node, "Embedding": None})
+
+    # Convert to DataFrame
+    df_embeddings = pd.DataFrame(node_embeddings)
+    
+    # Handle missing embeddings if any
+    df_embeddings = df_embeddings.dropna(subset=["Embedding"])
+
+    # Flatten the embeddings into individual columns in one step
+    embedding_matrix = pd.DataFrame(
+        df_embeddings["Embedding"].to_list(),
+        columns=[f"embedding_{i}" for i in range(128)],
+        index=df_embeddings.index
+    )
+    
+    # Concatenate with the original DataFrame and drop the "Embedding" column
+    df_embeddings = pd.concat([df_embeddings.drop(columns=["Embedding"]), embedding_matrix], axis=1)
+    
+    # Compute the cosine similarity between all pairs of nodes
+    embedding_matrix_values = df_embeddings[[f"embedding_{i}" for i in range(128)]].values
+    cosine_sim_matrix = cosine_similarity(embedding_matrix_values)
+    
+    return cosine_sim_matrix, df_embeddings
+
