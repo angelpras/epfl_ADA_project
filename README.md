@@ -64,7 +64,7 @@ Below is an outline of our approach for feature engineering and the training/val
 
 ### Feature engineering
 
-To maximize the performance of our GNN, we designed features that capture various aspects of the graph structure. Of course, there are others interesting ways to design features, that could be studied if the model performances are found to be not be satisfaying.
+To maximize the performance of our GNN, we designed features that capture various aspects of the graph structure. Of course, there are other interesting ways to design features, that could be studied if the model's performance is found to be unsatisfactory.
 
 #### Node (articles) features
 
