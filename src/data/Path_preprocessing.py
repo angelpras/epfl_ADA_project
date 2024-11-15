@@ -112,7 +112,7 @@ def number_games(df):
 
     return path_counts
 
-def stats_on_games(df)
+def stats_on_games(df):
     """
     Print statistics on the number of time same games are played
     """
