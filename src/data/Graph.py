@@ -6,13 +6,14 @@ from sentence_transformers.util import dot_score
 from node2vec import Node2Vec
 from sklearn.metrics.pairwise import cosine_similarity
 
-def articles_to_embeddings(parsed_articles, model):
+def articles_to_embeddings(parsed_articles, model, embeddings_path):
     """
     Returns a dictionary with the article titles as keys and the embeddings of the title and description as values
     """
     df = pd.DataFrame(parsed_articles, columns=['Article_Title', 'Related_Subjects', 'Description'])
     df['Article_Title_embedding'] = df['Article_Title'].apply(model.encode, engine='numba', engine_kwargs={'parallel':True})
     df['Description_embedding'] = df['Description'].apply(model.encode, engine='numba', engine_kwargs={'parallel':True})
+    df.to_pickle(embeddings_path)
     embedded_articles = dict(zip(df['Article_Title'], zip(df['Article_Title_embedding'], df['Description_embedding'] )))
     
     return embedded_articles
