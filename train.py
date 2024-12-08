@@ -1,6 +1,7 @@
 import torch
 import sys
 import os
+from tqdm import tqdm
 
 sys.path.append(os.path.abspath(os.path.join(os.getcwd(), 'src')))
 
@@ -35,7 +36,7 @@ def train_gcn(model, train_loader, val_loader, criterion, optimizer,
         model.train()
         total_train_loss = 0
         
-        for batch in train_loader:
+        for batch in tqdm(train_loader, desc=f"Epoch {epoch + 1}/{epochs}", leave=False):
             batch = batch.to(device)
             
             # Zero gradients
@@ -137,7 +138,9 @@ def main():
     else:
         print("Couldn't find the embeddings")
     
+    print("Creating Graph")
     G=create_graph(embedded_articles, df_links)
+    print("Making data loaders")
     data_loader = GraphDataLoader(G)
     train_loader, val_loader, test_loader = data_loader.create_graph_dataloaders()
 
@@ -145,6 +148,7 @@ def main():
     device = torch.device('mps' if torch.backends.mps.is_available() else 'cuda' if torch.cuda.is_available() else 'cpu')
     
     # Initialize model
+    print("Initializing model")
     model = EdgeClassificationGCNWrapper().to(device)
     
     # Loss and optimizer
@@ -152,6 +156,7 @@ def main():
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=1e-5)
     
     # Train the model
+    print("Starting training")
     trained_model = train_gcn(
         model, 
         train_loader, 
