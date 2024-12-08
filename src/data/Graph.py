@@ -1,6 +1,11 @@
 import numpy as np
 import pandas as pd
 import networkx as nx
+import torch
+import random
+from typing import Dict, Tuple, List
+from torch_geometric.data import Data, Dataset
+from torch_geometric.loader import DataLoader
 import matplotlib.pyplot as plt
 from sentence_transformers.util import dot_score
 from node2vec import Node2Vec
@@ -205,3 +210,245 @@ def calculate_negative_likelihood_and_labels(G, similarities):
     unconneted_labels = df[df['Predicted_Label'].notnull()]
     
     return unconneted_labels
+
+class GraphDataLoader:
+    def __init__(self, graph: nx.DiGraph):
+        """
+        Initialize the data loader with a directed graph
+        
+        Args:
+            graph (nx.DiGraph): Input graph representing article connections
+        """
+        self.graph = graph
+        self.node_features = {}
+        self.edge_features = {}
+        self.node_to_index = {node: idx for idx, node in enumerate(self.graph.nodes())}
+        self.index_to_node = {idx: node for node, idx in self.node_to_index.items()}
+        self.data = self.create_pyg_dataset()
+
+    def get_unconnected_subset(self, subset_size=350):
+        all_nodes = list(self.graph.nodes)
+        subset_nodes = random.sample(all_nodes, subset_size)
+
+        # Create a subgraph with the subset of nodes
+        subgraph = self.graph.subgraph(subset_nodes)
+        connected_pairs = set()
+        for u, v in subgraph.edges():
+            connected_pairs.add((u, v))
+            connected_pairs.add((v, u))
+
+        # Find all unconnected article pairs in the subgraph
+        all_pairs = set((a, b) for a in subset_nodes for b in subset_nodes if a != b)
+        unconnected_pairs = all_pairs - connected_pairs
+        return unconnected_pairs
+
+    def compute_node_features(self) -> None:
+        """
+        Compute various node-level features
+        """
+        # PageRank
+        pagerank = nx.pagerank(self.graph)
+        
+        # Eigenvector Centrality
+        eigenvector_centrality = nx.eigenvector_centrality(self.graph)
+        
+        # Store features
+        for node in self.graph.nodes():
+            # Retrieve title and description embeddings
+            title_embedding = self.graph.nodes[node].get('embedding_title', None)
+            desc_embedding = self.graph.nodes[node].get('embedding_description', None)
+            
+            self.node_features[node] = {
+                'title_embedding': title_embedding,
+                'description_embedding': desc_embedding,
+                'pagerank': pagerank.get(node, 0),
+                'eigenvector_centrality': eigenvector_centrality.get(node, 0)
+            }
+
+    def compute_edge_features(self) -> None:
+        """
+        Compute edge-level features using NetworkX built-in functions
+        
+        Features include:
+        - Jaccard Similarity
+        - Adamic-Adar Index
+        - Preferential Attachment
+        - Existing graph-created similarities
+        """
+        for u, v, data in self.graph.edges(data=True):
+            # Existing similarities from graph creation
+            title_similarity = data.get('weight_title', 0)
+            description_similarity = data.get('weight_description', 0)
+
+            # Compute Jaccard Similarity (for directed graph)
+            u_neighbors = set(self.graph.successors(u))
+            v_neighbors = set(self.graph.successors(v))
+            
+            # Compute Adamic-Adar Index
+            common_neighbors = u_neighbors.intersection(v_neighbors)
+            adamic_adar_index = sum(
+                1 / np.log(max(1, self.graph.out_degree(neighbor) + self.graph.in_degree(neighbor))) 
+                for neighbor in common_neighbors
+            )
+            
+            # Compute Preferential Attachment Score
+            u_degree = self.graph.out_degree(u) + self.graph.in_degree(u)
+            v_degree = self.graph.out_degree(v) + self.graph.in_degree(v)
+            preferential_attachment = u_degree * v_degree
+
+            jaccard_sim = 0
+            if u_neighbors or v_neighbors:
+                jaccard_sim = len(u_neighbors.intersection(v_neighbors)) / len(u_neighbors.union(v_neighbors))
+            
+            # Store computed features
+            self.edge_features[(u, v)] = {
+                'title_similarity': title_similarity,
+                'description_similarity': description_similarity,
+                'jaccard_similarity': jaccard_sim,
+                'adamic_adar_index': adamic_adar_index,
+                'preferential_attachment': preferential_attachment
+            }
+
+    def create_pyg_dataset(
+        self, 
+        num_negative_samples: int = None
+    ) -> Data:
+        """
+        Create a PyTorch Geometric dataset with node and edge features
+        
+        Args:
+            num_negative_samples (int, optional): Number of negative samples
+        
+        Returns:
+            Data: PyTorch Geometric data object
+        """
+        # Compute node and edge features if not already done
+        if not self.node_features:
+            self.compute_node_features()
+        
+        if not self.edge_features:
+            self.compute_edge_features()
+        
+        # Get positive links
+        positive_links = list(self.graph.edges())
+        
+        # Generate negative samples
+# TODO CHANGE TO A BETTER SAMPLING FUNCTION, for now it's random
+        negative_links = list(self.get_unconnected_subset())
+        
+        # Convert links to index-based representation
+        indexed_positive_links = [(self.node_to_index[u], self.node_to_index[v]) for u, v in positive_links]
+        indexed_negative_links = [(self.node_to_index[u], self.node_to_index[v]) for u, v in negative_links]
+        
+        # Combine links with labels
+        all_links = indexed_positive_links + indexed_negative_links
+        labels = [1] * len(positive_links) + [0] * len(negative_links)
+        
+        # Create edge index and labels tensors
+        edge_index = torch.tensor(all_links, dtype=torch.long).t().contiguous()
+        edge_labels = torch.tensor(labels, dtype=torch.float)
+        
+        # Create node feature tensor with robust handling of embeddings
+        node_features = []
+        for node in self.graph.nodes():
+            # Extract features, converting to list and handling potential None values
+            title_embedding = self.node_features[node].get('title_embedding', [0] * 768)  # Default 768-dim zero vector
+            desc_embedding = self.node_features[node].get('description_embedding', [0] * 768)
+            pagerank = [self.node_features[node].get('pagerank', 0)]
+            eigenvector = [self.node_features[node].get('eigenvector_centrality', 0)]
+            
+            # Flatten and convert to numpy/torch compatible format
+            node_feature = (
+                (title_embedding if isinstance(title_embedding, list) else title_embedding.tolist()) +
+                (desc_embedding if isinstance(desc_embedding, list) else desc_embedding.tolist()) +
+                pagerank +
+                eigenvector
+            )
+            
+            node_features.append(node_feature)
+        
+        # Convert node features to tensor
+        node_features = torch.tensor(node_features, dtype=torch.float)
+
+        # Create edge feature tensor
+        edge_features = torch.tensor([
+            [
+                self.edge_features.get((u, v), {}).get('title_similarity', 0),
+                self.edge_features.get((u, v), {}).get('description_similarity', 0),
+                self.edge_features.get((u, v), {}).get('jaccard_similarity', 0),
+                self.edge_features.get((u, v), {}).get('adamic_adar_index', 0),
+                self.edge_features.get((u, v), {}).get('preferential_attachment', 0)
+            ] for u, v in all_links
+        ], dtype=torch.float)
+
+        # Create PyG Data object
+        data = Data(
+            x=node_features, 
+            edge_index=edge_index, 
+            edge_attr=edge_features, 
+            y=edge_labels
+        )
+
+        return data
+    
+    def create_edge_datasets(self, train_ratio=0.7, val_ratio=0.15):
+        """
+        Split the dataset into training, validation, and test sets
+        
+        Args:
+            data (Data): Original PyG Data object
+            train_ratio (float): Proportion of data for training
+            val_ratio (float): Proportion of data for validation
+        
+        Returns:
+            list: List of individual edge Data objects
+        """
+        # Total number of edges
+        total_edges = self.data.edge_index.shape[1]
+        
+        # Shuffle edge indices
+        shuffle_idx = torch.randperm(total_edges)
+        shuffled_edge_index = self.data.edge_index[:, shuffle_idx]
+        shuffled_edge_attr = self.data.edge_attr[shuffle_idx]
+        shuffled_labels = self.data.y[shuffle_idx]
+        
+        # Calculate split indices
+        train_end = int(total_edges * train_ratio)
+        val_end = train_end + int(total_edges * val_ratio)
+        
+        # Create individual edge datasets
+        edge_datasets = []
+        for i in range(total_edges):
+            edge_data = Data(
+                x=self.data.x,
+                edge_index=shuffled_edge_index[:, i:i+1],
+                edge_attr=shuffled_edge_attr[i:i+1],
+                y=shuffled_labels[i:i+1]
+            )
+            edge_datasets.append(edge_data)
+        
+        return {
+            'train': edge_datasets[:train_end],
+            'val': edge_datasets[train_end:val_end],
+            'test': edge_datasets[val_end:]
+        }
+
+    def create_graph_dataloaders(self, batch_size=32):
+        """
+        Create train, validation, and test dataloaders
+        
+        Args:
+            data (Data): PyTorch Geometric Data object
+            batch_size (int): Batch size for dataloaders
+        
+        Returns:
+            tuple: Train, validation, and test dataloaders
+        """
+        edge_datasets = self.create_edge_datasets()
+        train_loader = DataLoader(edge_datasets['train'], batch_size=32, shuffle=True)
+        val_loader = DataLoader(edge_datasets['val'], batch_size=32)
+        test_loader = DataLoader(edge_datasets['test'], batch_size=32)
+
+        return train_loader, val_loader, test_loader
+    
+
