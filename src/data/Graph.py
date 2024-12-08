@@ -157,3 +157,51 @@ def Node2Vec_func(G):
     
     return cosine_sim_matrix, df_embeddings
 
+def calculate_negative_likelihood_and_labels(G, similarities):
+    """
+    Calculates negative likelihood scores and assigns labels to node pairs.
+
+    Args:
+        G: The graph object.
+        seed: Random seed for reproducibility.
+
+    Returns:
+        pd.DataFrame: DataFrame with node pairs, scores, and labels.
+    """
+    # Extract connected and unconnected pairs with cosine similarities
+    unconnected_similarities = similarities['unconnected_pairs']
+
+    # Calculate negative likelihood scores
+    data = []
+    for pair in unconnected_similarities:
+        source, target = pair['source'], pair['target']
+        title_similarity = pair['title_similarity']
+        description_similarity = pair['description_similarity']
+        # Negative likelihood score
+        score = 1 - (0.5 * title_similarity + 0.5 * description_similarity)
+        data.append((source, target, score)) 
+
+    connected_scores = []
+    for u, v, data_edge in G.edges(data=True):
+        title_similarity = data_edge['weight_title']
+        description_similarity = data_edge['weight_description']
+
+        # Negative likelihood score
+        score = 1 - (0.5 * title_similarity + 0.5 * description_similarity)
+        connected_scores.append(score)
+
+    # Create DataFrame
+    df = pd.DataFrame(data, columns=['Source', 'Target', 'Score'])
+
+    # Set threshold (e.g., median score)
+    threshold_non_linked = 0.9
+    threshold_connected = sum(connected_scores) / len(connected_scores)
+    
+    df['Predicted_Label'] = None
+    df.loc[df['Score'] > threshold_non_linked, 'Predicted_Label'] = 0
+    df.loc[df['Score'] < threshold_connected, 'Predicted_Label'] = 1
+    
+    # Filter rows where Predicted_Label is not None
+    unconneted_labels = df[df['Predicted_Label'].notnull()]
+    
+    return unconneted_labels
