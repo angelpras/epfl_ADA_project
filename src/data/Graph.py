@@ -168,24 +168,32 @@ def calculate_negative_likelihood_and_labels(G, similarities):
 
     Args:
         G: The graph object.
-        seed: Random seed for reproducibility.
+        similarities: Dictionary containing connected and unconnected pairs with cosine similarities.
 
     Returns:
-        pd.DataFrame: DataFrame with node pairs, scores, and labels.
+        tuple: Two sets of pairs - candidates for link prediction and zero-label non-links.
     """
-    # Extract connected and unconnected pairs with cosine similarities
+    # Extract unconnected pairs with cosine similarities
     unconnected_similarities = similarities['unconnected_pairs']
 
-    # Calculate negative likelihood scores
-    data = []
+    # Calculate negative likelihood scores for unconnected pairs
+    zero_label_non_links = set()
+    candidates = set()
+
+    # Process unconnected pairs
     for pair in unconnected_similarities:
         source, target = pair['source'], pair['target']
         title_similarity = pair['title_similarity']
         description_similarity = pair['description_similarity']
+        
         # Negative likelihood score
         score = 1 - (0.5 * title_similarity + 0.5 * description_similarity)
-        data.append((source, target, score)) 
-
+        
+        # Categorize based on thresholds
+        if score > 0.9:  # Non-linked threshold
+            zero_label_non_links.add((source, target))
+        
+    # Calculate negative likelihood scores for connected pairs
     connected_scores = []
     for u, v, data_edge in G.edges(data=True):
         title_similarity = data_edge['weight_title']
@@ -195,24 +203,25 @@ def calculate_negative_likelihood_and_labels(G, similarities):
         score = 1 - (0.5 * title_similarity + 0.5 * description_similarity)
         connected_scores.append(score)
 
-    # Create DataFrame
-    df = pd.DataFrame(data, columns=['Source', 'Target', 'Score'])
-
-    # Set threshold (e.g., median score)
-    threshold_non_linked = 0.9
+    # Threshold for connected pairs
     threshold_connected = sum(connected_scores) / len(connected_scores)
-    
-    df['Predicted_Label'] = None
-    df.loc[df['Score'] > threshold_non_linked, 'Predicted_Label'] = 0
-    df.loc[df['Score'] < threshold_connected, 'Predicted_Label'] = 1
-    
-    # Filter rows where Predicted_Label is not None
-    unconneted_labels = df[df['Predicted_Label'].notnull()]
-    
-    return unconneted_labels
+
+    # Add candidates for link prediction
+    for pair in unconnected_similarities:
+        source, target = pair['source'], pair['target']
+        title_similarity = pair['title_similarity']
+        description_similarity = pair['description_similarity']
+
+        # Negative likelihood score
+        score = 1 - (0.5 * title_similarity + 0.5 * description_similarity)
+
+        if score < threshold_connected:  # Connected threshold
+            candidates.add((source, target))
+
+    return candidates, zero_label_non_links
 
 class GraphDataLoader:
-    def __init__(self, graph: nx.DiGraph):
+    def __init__(self, graph: nx.DiGraph, candidates: set, zero_label_non_links: set):
         """
         Initialize the data loader with a directed graph
         
@@ -220,27 +229,12 @@ class GraphDataLoader:
             graph (nx.DiGraph): Input graph representing article connections
         """
         self.graph = graph
+        self.candidates = candidates
+        self.zero_label_non_links = zero_label_non_links
         self.node_features = {}
         self.edge_features = {}
         self.node_to_index = {node: idx for idx, node in enumerate(self.graph.nodes())}
         self.index_to_node = {idx: node for node, idx in self.node_to_index.items()}
-        self.data = self.create_pyg_dataset()
-
-    def get_unconnected_subset(self, subset_size=350):
-        all_nodes = list(self.graph.nodes)
-        subset_nodes = random.sample(all_nodes, subset_size)
-
-        # Create a subgraph with the subset of nodes
-        subgraph = self.graph.subgraph(subset_nodes)
-        connected_pairs = set()
-        for u, v in subgraph.edges():
-            connected_pairs.add((u, v))
-            connected_pairs.add((v, u))
-
-        # Find all unconnected article pairs in the subgraph
-        all_pairs = set((a, b) for a in subset_nodes for b in subset_nodes if a != b)
-        unconnected_pairs = all_pairs - connected_pairs
-        return unconnected_pairs
 
     def compute_node_features(self) -> None:
         """
@@ -309,15 +303,9 @@ class GraphDataLoader:
                 'preferential_attachment': preferential_attachment
             }
 
-    def create_pyg_dataset(
-        self, 
-        num_negative_samples: int = None
-    ) -> Data:
+    def create_pyg_dataset(self) -> Data:
         """
         Create a PyTorch Geometric dataset with node and edge features
-        
-        Args:
-            num_negative_samples (int, optional): Number of negative samples
         
         Returns:
             Data: PyTorch Geometric data object
@@ -332,9 +320,8 @@ class GraphDataLoader:
         # Get positive links
         positive_links = list(self.graph.edges())
         
-        # Generate negative samples
-# TODO CHANGE TO A BETTER SAMPLING FUNCTION, for now it's random
-        negative_links = list(self.get_unconnected_subset())
+        # Get negative samples
+        negative_links = list(self.zero_label_non_links)
         
         # Convert links to index-based representation
         indexed_positive_links = [(self.node_to_index[u], self.node_to_index[v]) for u, v in positive_links]
@@ -348,6 +335,15 @@ class GraphDataLoader:
         edge_index = torch.tensor(all_links, dtype=torch.long).t().contiguous()
         edge_labels = torch.tensor(labels, dtype=torch.float)
         
+        # Get candidate links
+        candidate_links = list(self.candidates)
+        
+        # Convert links to index-based representation
+        indexed_candidate_links = [(self.node_to_index[u], self.node_to_index[v]) for u, v in candidate_links]
+        
+        # Create edge index and labels tensors
+        candidates_edge_index = torch.tensor(indexed_candidate_links, dtype=torch.long).t().contiguous()
+
         # Create node feature tensor with robust handling of embeddings
         node_features = []
         for node in self.graph.nodes():
@@ -381,6 +377,16 @@ class GraphDataLoader:
             ] for u, v in all_links
         ], dtype=torch.float)
 
+        candidates_edge_features = torch.tensor([
+            [
+                self.edge_features.get((u, v), {}).get('title_similarity', 0),
+                self.edge_features.get((u, v), {}).get('description_similarity', 0),
+                self.edge_features.get((u, v), {}).get('jaccard_similarity', 0),
+                self.edge_features.get((u, v), {}).get('adamic_adar_index', 0),
+                self.edge_features.get((u, v), {}).get('preferential_attachment', 0)
+            ] for u, v in candidate_links
+        ], dtype=torch.float)
+
         # Create PyG Data object
         data = Data(
             x=node_features, 
@@ -388,67 +394,83 @@ class GraphDataLoader:
             edge_attr=edge_features, 
             y=edge_labels
         )
+        data_candidates = Data(
+            x=node_features,
+            edge_index=candidates_edge_index,
+            edge_attr=candidates_edge_features
+        )
 
-        return data
+        return data, data_candidates
+        
+def create_edge_datasets(dataset, candidates_dataset, train_ratio=0.7, val_ratio=0.15):
+    """
+    Split the dataset into training, validation, and test sets
     
-    def create_edge_datasets(self, train_ratio=0.7, val_ratio=0.15):
-        """
-        Split the dataset into training, validation, and test sets
-        
-        Args:
-            data (Data): Original PyG Data object
-            train_ratio (float): Proportion of data for training
-            val_ratio (float): Proportion of data for validation
-        
-        Returns:
-            list: List of individual edge Data objects
-        """
-        # Total number of edges
-        total_edges = self.data.edge_index.shape[1]
-        
-        # Shuffle edge indices
-        shuffle_idx = torch.randperm(total_edges)
-        shuffled_edge_index = self.data.edge_index[:, shuffle_idx]
-        shuffled_edge_attr = self.data.edge_attr[shuffle_idx]
-        shuffled_labels = self.data.y[shuffle_idx]
-        
-        # Calculate split indices
-        train_end = int(total_edges * train_ratio)
-        val_end = train_end + int(total_edges * val_ratio)
-        
-        # Create individual edge datasets
-        edge_datasets = []
-        for i in range(total_edges):
-            edge_data = Data(
-                x=self.data.x,
-                edge_index=shuffled_edge_index[:, i:i+1],
-                edge_attr=shuffled_edge_attr[i:i+1],
-                y=shuffled_labels[i:i+1]
-            )
-            edge_datasets.append(edge_data)
-        
-        return {
-            'train': edge_datasets[:train_end],
-            'val': edge_datasets[train_end:val_end],
-            'test': edge_datasets[val_end:]
-        }
-
-    def create_graph_dataloaders(self, batch_size=32):
-        """
-        Create train, validation, and test dataloaders
-        
-        Args:
-            data (Data): PyTorch Geometric Data object
-            batch_size (int): Batch size for dataloaders
-        
-        Returns:
-            tuple: Train, validation, and test dataloaders
-        """
-        edge_datasets = self.create_edge_datasets()
-        train_loader = DataLoader(edge_datasets['train'], batch_size=32, shuffle=True)
-        val_loader = DataLoader(edge_datasets['val'], batch_size=32)
-        test_loader = DataLoader(edge_datasets['test'], batch_size=32)
-
-        return train_loader, val_loader, test_loader
+    Args:
+        data (Data): Original PyG Data object
+        train_ratio (float): Proportion of data for training
+        val_ratio (float): Proportion of data for validation
     
+    Returns:
+        list: List of individual edge Data objects
+    """
+    # Total number of edges
+    total_edges = dataset.edge_index.shape[1]
+    
+    # Shuffle edge indices
+    shuffle_idx = torch.randperm(total_edges)
+    shuffled_edge_index = dataset.edge_index[:, shuffle_idx]
+    shuffled_edge_attr = dataset.edge_attr[shuffle_idx]
+    shuffled_labels = dataset.y[shuffle_idx]
+    
+    # Calculate split indices
+    train_end = int(total_edges * train_ratio)
+    val_end = train_end + int(total_edges * val_ratio)
+    
+    # Create individual edge datasets
+    edge_datasets = []
+    for i in range(total_edges):
+        edge_data = Data(
+            x=dataset.x,
+            edge_index=shuffled_edge_index[:, i:i+1],
+            edge_attr=shuffled_edge_attr[i:i+1],
+            y=shuffled_labels[i:i+1]
+        )
+        edge_datasets.append(edge_data)
+
+    candidates_edge_datasets = []
+    for i in range(len(candidates_dataset.edge_index[1])):
+        edge_data = Data(
+            x=candidates_dataset.x,
+            edge_index=candidates_dataset.edge_index[:, i:i+1],
+            edge_attr=candidates_dataset.edge_attr[i:i+1]
+        )
+        candidates_edge_datasets.append(edge_data)
+
+    return {
+        'train': edge_datasets[:train_end],
+        'val': edge_datasets[train_end:val_end],
+        'test': edge_datasets[val_end:],
+        'candidates': candidates_edge_datasets
+    }
+
+def create_graph_dataloaders(dataset, candidates_dataset, batch_size=32):
+    """
+    Create train, validation, and test dataloaders
+    
+    Args:
+        data (Data): PyTorch Geometric Data object
+        batch_size (int): Batch size for dataloaders
+    
+    Returns:
+        tuple: Train, validation, and test dataloaders
+    """
+    edge_datasets = create_edge_datasets(dataset, candidates_dataset)
+    train_loader = DataLoader(edge_datasets['train'], batch_size=batch_size, shuffle=True)
+    val_loader = DataLoader(edge_datasets['val'], batch_size=batch_size)
+    test_loader = DataLoader(edge_datasets['test'], batch_size=batch_size)
+    candidates_loader = DataLoader(edge_datasets['candidates'], batch_size=batch_size)
+
+    return train_loader, val_loader, test_loader, candidates_loader
+
 

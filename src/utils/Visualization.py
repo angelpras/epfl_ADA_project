@@ -29,7 +29,7 @@ def visualize_graph(G):
     #plt.savefig("graph.png", dpi=1000)  
     plt.show()
 
-def visualize_node_similarity_distributions(G, subset_size=350, y_max = 12500, seed=1):
+def create_node_similarity_distributions(G, subset_size=350, seed=1):
     weight_titles_connected = [data['weight_title'] for _, _, data in G.edges(data=True)]
     weight_descriptions_connected = [data['weight_description'] for _, _, data in G.edges(data=True)]
     
@@ -74,7 +74,25 @@ def visualize_node_similarity_distributions(G, subset_size=350, y_max = 12500, s
             'description_similarity': cosine_description
         })
     
-    
+    return {
+        'connected_titles': weight_titles_connected,
+        'connected_descriptions': weight_descriptions_connected,
+        'unconnected_titles': weight_titles_unconnected,
+        'unconnected_descriptions': weight_descriptions_unconnected,
+        'unconnected_pairs': unconnected_similarities
+    }
+
+def visualize_node_similarity_distributions(G=None, similarities=None, y_max=12500):
+    if similarities is None:
+        if G is None:
+            raise ValueError("You must provide a graph G")
+        similarities = create_node_similarity_distributions(G)
+
+    weight_titles_connected = similarities['connected_titles']
+    weight_descriptions_connected = similarities['connected_descriptions']
+    weight_titles_unconnected = similarities['unconnected_titles']
+    weight_descriptions_unconnected = similarities['unconnected_descriptions']
+
     # Plot the histograms
     all_weights_titles = weight_titles_connected + weight_titles_unconnected
     all_weights_descriptions = weight_descriptions_connected + weight_descriptions_unconnected
@@ -120,15 +138,6 @@ def visualize_node_similarity_distributions(G, subset_size=350, y_max = 12500, s
 
     plt.tight_layout(rect=[0, 0.03, 1, 0.95])
     plt.show()
-
-    return {
-        'connected_titles': weight_titles_connected,
-        'connected_descriptions': weight_descriptions_connected,
-        'unconnected_titles': weight_titles_unconnected,
-        'unconnected_descriptions': weight_descriptions_unconnected,
-        'unconnected_pairs': unconnected_similarities
-        }
-
 
 def visualize_connected_vs_unconnected_cs_distribution(G, similarities):
     # Box plots for titles
