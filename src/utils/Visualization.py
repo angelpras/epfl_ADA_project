@@ -35,19 +35,28 @@ def create_node_similarity_distributions(G, subset_size=350, seed=1):
     
     random.seed(seed)
 
-    all_nodes = list(G.nodes)
-    subset_nodes = random.sample(all_nodes, subset_size)
+    # all_nodes = list(G.nodes)
+    # subset_nodes = random.sample(all_nodes, subset_size)
 
-    # Create a subgraph with the subset of nodes
-    subgraph = G.subgraph(subset_nodes)
+    # # Create a subgraph with the subset of nodes
+    # subgraph = G.subgraph(subset_nodes)
+    # connected_pairs = set()
+    # for u, v in subgraph.edges():
+    #     connected_pairs.add((u, v))
+    #     connected_pairs.add((v, u))
+
+    # # Find all unconnected article pairs in the subgraph
+    # all_pairs = set((a, b) for a in subset_nodes for b in subset_nodes if a != b)
+    # unconnected_pairs = all_pairs - connected_pairs
+
+    # New way of taking a subset of unconnected nodes
     connected_pairs = set()
-    for u, v in subgraph.edges():
+    for u, v in G.edges():
         connected_pairs.add((u, v))
-        connected_pairs.add((v, u))
-
-    # Find all unconnected article pairs in the subgraph
-    all_pairs = set((a, b) for a in subset_nodes for b in subset_nodes if a != b)
+    all_nodes = list(G.nodes)
+    all_pairs = set((a, b) for a in all_nodes for b in all_nodes if a != b)
     unconnected_pairs = all_pairs - connected_pairs
+    unconnected_pairs =set(random.sample(list(unconnected_pairs), subset_size**2))
 
     # Calculate cosine similarities for unconnected pairs
     unconnected_similarities = []
@@ -56,10 +65,10 @@ def create_node_similarity_distributions(G, subset_size=350, seed=1):
 
 
     for source, target in unconnected_pairs:
-        embedding_title_source = subgraph.nodes[source]['embedding_title']
-        embedding_description_source = subgraph.nodes[source]['embedding_description']
-        embedding_title_target = subgraph.nodes[target]['embedding_title']
-        embedding_description_target = subgraph.nodes[target]['embedding_description']
+        embedding_title_source = G.nodes[source]['embedding_title']
+        embedding_description_source = G.nodes[source]['embedding_description']
+        embedding_title_target = G.nodes[target]['embedding_title']
+        embedding_description_target = G.nodes[target]['embedding_description']
         
         cosine_title = float(dot_score(embedding_title_source, embedding_title_target))
         cosine_description = float(dot_score(embedding_description_source, embedding_description_target))

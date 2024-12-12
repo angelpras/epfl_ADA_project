@@ -220,8 +220,19 @@ def calculate_negative_likelihood_and_labels(G, similarities):
 
     return candidates, zero_label_non_links
 
+def node2index_maps(embedded_articles):
+    """
+    Returns a dictionary mapping node names to their corresponding indices
+    """
+    nodes = list(embedded_articles.keys())
+    nodes.sort()
+    node_to_index = {node: idx for idx, node in enumerate(nodes)}
+    index_to_node = {idx: node for node, idx in node_to_index.items()}
+    
+    return node_to_index, index_to_node
+
 class GraphDataLoader:
-    def __init__(self, graph: nx.DiGraph, candidates: set, zero_label_non_links: set):
+    def __init__(self, graph: nx.DiGraph, candidates: set=None, zero_label_non_links: set=None):
         """
         Initialize the data loader with a directed graph
         
@@ -233,7 +244,10 @@ class GraphDataLoader:
         self.zero_label_non_links = zero_label_non_links
         self.node_features = {}
         self.edge_features = {}
-        self.node_to_index = {node: idx for idx, node in enumerate(self.graph.nodes())}
+
+        self.nodes = list(graph.nodes())
+        self.nodes.sort()
+        self.node_to_index = {node: idx for idx, node in enumerate(self.nodes)}
         self.index_to_node = {idx: node for node, idx in self.node_to_index.items()}
 
     def compute_node_features(self) -> None:
@@ -247,7 +261,7 @@ class GraphDataLoader:
         eigenvector_centrality = nx.eigenvector_centrality(self.graph)
         
         # Store features
-        for node in self.graph.nodes():
+        for node in self.nodes:
             # Retrieve title and description embeddings
             title_embedding = self.graph.nodes[node].get('embedding_title', None)
             desc_embedding = self.graph.nodes[node].get('embedding_description', None)
@@ -346,7 +360,7 @@ class GraphDataLoader:
 
         # Create node feature tensor with robust handling of embeddings
         node_features = []
-        for node in self.graph.nodes():
+        for node in self.nodes:
             # Extract features, converting to list and handling potential None values
             title_embedding = self.node_features[node].get('title_embedding', [0] * 768)  # Default 768-dim zero vector
             desc_embedding = self.node_features[node].get('description_embedding', [0] * 768)

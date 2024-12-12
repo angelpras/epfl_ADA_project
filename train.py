@@ -13,7 +13,7 @@ from utils.Visualization import *
 
 
 def train_gcn(model, train_loader, val_loader, criterion, optimizer, 
-              device, epochs=5, early_stopping_patience=10):
+              device, epochs=2, early_stopping_patience=10):
     """
     Training function for the GCN model
     
@@ -89,7 +89,7 @@ def train_gcn(model, train_loader, val_loader, criterion, optimizer,
     model.load_state_dict(torch.load('best_gcn_model.pth'))
     return model
 
-def evaluate_model(model, test_loader, device):
+def evaluate_model(model, test_loader, device, threshold = 0.5):
     """
     Evaluate the trained model on test data
     
@@ -109,7 +109,7 @@ def evaluate_model(model, test_loader, device):
         for batch in tqdm(test_loader, leave=False):
             batch = batch.to(device)
             outputs = model(batch)
-            preds = (outputs > 0.5).float()
+            preds = (outputs > threshold).float()
             
             all_preds.append(preds)
             all_labels.append(batch.y)
@@ -124,14 +124,16 @@ def evaluate_model(model, test_loader, device):
     accuracy = (all_preds == all_labels).float().mean()
     precision = (all_preds[all_preds == 1] == all_labels[all_preds == 1]).float().mean()
     recall = (all_preds[all_labels == 1] == all_labels[all_labels == 1]).float().mean()
+    f1 = 2 * precision * recall / (precision + recall)
     
     return {
         'accuracy': accuracy.item(),
         'precision': precision.item(),
-        'recall': recall.item()
+        'recall': recall.item(),
+        'f1': f1.item()
     }
 
-def model_infer(model, test_loader, device):
+def model_infer(model, test_loader, index_to_node, device, threshold = 0.95):
     """
     Evaluate the trained model on test data
     
@@ -145,12 +147,32 @@ def model_infer(model, test_loader, device):
     """
     model.eval()
     all_preds = []
-    
+    link_nodes = []
+
     with torch.no_grad():
         for batch in tqdm(test_loader, leave=False):
             batch = batch.to(device)
             outputs = model(batch)
-            preds = (outputs > 0.5).float()
+            preds = (outputs > threshold).float()
+            all_preds.append(preds)
+            
+            # Find where predictions are links (1.0)
+            link_indices = torch.where(preds == 1)[0]
+            
+            # Collect node names for links
+            for idx in link_indices:
+                try:
+                    # Safely get the node indices
+                    source_idx = batch[idx].edge_index[0].item()
+                    target_idx = batch[idx].edge_index[1].item()
+                    
+                    # Look up nodes, using a default if not found
+                    source_node = index_to_node.get(source_idx, f"Unknown Node {source_idx}")
+                    target_node = index_to_node.get(target_idx, f"Unknown Node {target_idx}")
+                    
+                    link_nodes.append((source_node, target_node))
+                except Exception as e:
+                    print(f"Error processing link at index {idx}: {e}")
             
             all_preds.append(preds)
     
@@ -161,7 +183,14 @@ def model_infer(model, test_loader, device):
 
     print(f"Percentage of links: {link_percentage:.2f}%")
     print(f"Percentage of non-links: {non_link_percentage:.2f}%")
-    return all_preds
+
+    print("\nDetailed Link Information:")
+    for idx, (source, target) in enumerate(link_nodes):
+        print(f"Link between {source} and {target}")
+        if idx >= 10:
+            break
+   
+    return all_preds, link_nodes
 
 # Example usage
 def main():
@@ -207,32 +236,34 @@ def main():
     # Initialize model
     print("Initializing model")
     model = EdgeClassificationGCNWrapper().to(device)
-    
+
+    if os.path.exists('best_gcn_model.pth'):
+        # If model already trained, load it
+        model.load_state_dict(torch.load('best_gcn_model.pth', weights_only=True))
+    # else:
     # Loss and optimizer
     criterion = torch.nn.BCELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=1e-5)
-    
+
     # Train the model
     print("Starting training")
-    # model = train_gcn(
-    #     model, 
-    #     train_loader, 
-    #     val_loader, 
-    #     criterion, 
-    #     optimizer, 
-    #     device
-    # )
-    
-    # If model already trained, load it
-    model.load_state_dict(torch.load('best_gcn_model.pth', weights_only=True))
+    model = train_gcn(
+        model, 
+        train_loader, 
+        val_loader, 
+        criterion, 
+        optimizer, 
+        device
+    ) 
 
     # Evaluate on test set
     print("evaluating on test set")
-    metrics = evaluate_model(model, test_loader, device)
+    metrics = evaluate_model(model, test_loader, device, threshold=0.5)
     print("Test Metrics:", metrics)
 
+    _, index_to_node = node2index_maps(embedded_articles)
     print("Evaluating on the candidates set")
-    link_predictions = model_infer(model, candidates_loader, device)
+    link_predictions = model_infer(model, candidates_loader, index_to_node, device, threshold=0.95)
 
 if __name__ == '__main__':
     main()
