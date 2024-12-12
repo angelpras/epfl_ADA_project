@@ -247,23 +247,25 @@ def main():
 
     # Train the model
     print("Starting training")
-    model = train_gcn(
-        model, 
-        train_loader, 
-        val_loader, 
-        criterion, 
-        optimizer, 
-        device
-    ) 
+    # model = train_gcn(
+    #     model, 
+    #     train_loader, 
+    #     val_loader, 
+    #     criterion, 
+    #     optimizer, 
+    #     device
+    # ) 
 
-    # Evaluate on test set
-    print("evaluating on test set")
-    metrics = evaluate_model(model, test_loader, device, threshold=0.5)
-    print("Test Metrics:", metrics)
+    # # Evaluate on test set
+    # print("evaluating on test set")
+    # metrics = evaluate_model(model, test_loader, device, threshold=0.5)
+    # print("Test Metrics:", metrics)
 
     _, index_to_node = node2index_maps(embedded_articles)
     print("Evaluating on the candidates set")
-    link_predictions = model_infer(model, candidates_loader, index_to_node, device, threshold=0.95)
+    preds, linked_nodes = model_infer(model, candidates_loader, index_to_node, device, threshold=0.9)
+    pd.DataFrame(linked_nodes, columns=['Source', 'Target']).to_csv('linked_nodes.csv', index=False)
+
 
 if __name__ == '__main__':
     main()
