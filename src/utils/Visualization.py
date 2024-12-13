@@ -29,36 +29,25 @@ def visualize_graph(G):
     #plt.savefig("graph.png", dpi=1000)  
     plt.show()
 
-def create_node_similarity_distributions(G, subset_size=350, seed=1):
+def create_subset_unconnected_nodes(G, subset_size=350, seed=1):
+    random.seed(seed)
+    # New way of taking a subset of unconnected nodes
+    connected_pairs = set(G.edges())
+    all_nodes = list(G.nodes)
+    unconnected_pairs = set()
+
+    while len(unconnected_pairs) < subset_size**2:
+        # Randomly sample two distinct nodes
+        a, b = random.sample(all_nodes, 2)
+        # Add the pair if it is not connected and not already in unconnected_pairs
+        if (a, b) not in connected_pairs and (b, a) not in connected_pairs:
+            unconnected_pairs.add((a, b))
+
+    return unconnected_pairs
+
+def create_node_similarity_distributions(G, unconnected_pairs):
     weight_titles_connected = [data['weight_title'] for _, _, data in G.edges(data=True)]
     weight_descriptions_connected = [data['weight_description'] for _, _, data in G.edges(data=True)]
-    
-    random.seed(seed)
-
-    # all_nodes = list(G.nodes)
-    # subset_nodes = random.sample(all_nodes, subset_size)
-
-    # # Create a subgraph with the subset of nodes
-    # subgraph = G.subgraph(subset_nodes)
-    # connected_pairs = set()
-    # for u, v in subgraph.edges():
-    #     connected_pairs.add((u, v))
-    #     connected_pairs.add((v, u))
-
-    # # Find all unconnected article pairs in the subgraph
-    # all_pairs = set((a, b) for a in subset_nodes for b in subset_nodes if a != b)
-    # unconnected_pairs = all_pairs - connected_pairs
-
-    # New way of taking a subset of unconnected nodes
-    connected_pairs = set()
-    for u, v in G.edges():
-        connected_pairs.add((u, v))
-    all_nodes = list(G.nodes)
-    all_pairs = set((a, b) for a in all_nodes for b in all_nodes if a != b)
-    unconnected_pairs = all_pairs - connected_pairs
-    unconnected_pairs =set(random.sample(list(unconnected_pairs), subset_size**2))
-
-    # Calculate cosine similarities for unconnected pairs
     unconnected_similarities = []
     weight_titles_unconnected = []
     weight_descriptions_unconnected = []
@@ -91,11 +80,11 @@ def create_node_similarity_distributions(G, subset_size=350, seed=1):
         'unconnected_pairs': unconnected_similarities
     }
 
-def visualize_node_similarity_distributions(G=None, similarities=None, y_max=12500):
+def visualize_node_similarity_distributions(unconnected_pairs, G=None, similarities=None, y_max=12500):
     if similarities is None:
         if G is None:
             raise ValueError("You must provide a graph G")
-        similarities = create_node_similarity_distributions(G)
+        similarities = create_node_similarity_distributions(G, unconnected_pairs)
 
     weight_titles_connected = similarities['connected_titles']
     weight_descriptions_connected = similarities['connected_descriptions']
@@ -148,7 +137,7 @@ def visualize_node_similarity_distributions(G=None, similarities=None, y_max=125
     plt.tight_layout(rect=[0, 0.03, 1, 0.95])
     plt.show()
 
-def visualize_connected_vs_unconnected_cs_distribution(G, similarities):
+def visualize_connected_vs_unconnected_cs_distribution(similarities):
     # Box plots for titles
     plt.figure(figsize=(10, 5))
     sns.boxplot(data=[similarities['connected_titles'], similarities['unconnected_titles']])
@@ -166,7 +155,7 @@ def visualize_connected_vs_unconnected_cs_distribution(G, similarities):
     plt.show()
 
 
-def calculate_links_conditional_proba(G, similarities):
+def calculate_links_conditional_proba(similarities):
 
     # Define similarity bins 
     bins = np.arange(-0.4, 1.05, 0.05)
@@ -176,8 +165,6 @@ def calculate_links_conditional_proba(G, similarities):
     unconnected_descriptions_counts, _ = np.histogram(similarities['unconnected_descriptions'], bins=bins)
     connected_titles_counts, _ = np.histogram(similarities['connected_titles'], bins=bins)
     unconnected_titles_counts, _ = np.histogram(similarities['unconnected_titles'], bins=bins)
-
-
 
     # Create a DataFrame to store the results
     df_descriptions = pd.DataFrame({
@@ -216,33 +203,15 @@ def calculate_links_conditional_proba(G, similarities):
     plt.grid(axis='y', linestyle='--', alpha=0.7)
     plt.show()
 
-def calculate_preferential_attachment(G):
+def calculate_preferential_attachment(G, unconnected_pairs):
     ############ Connected Nodes ############
-    G_connected_undirected = G.to_undirected()
-    attachment_connected_vals = nx.preferential_attachment(G_connected_undirected)
+    G_undirected = G.to_undirected()
+    attachment_connected_vals = nx.preferential_attachment(G_undirected)
     attachment_connected_scores = [p for _, _, p in attachment_connected_vals]
 
     ############ Unconnected Nodes ############
-    subset_size = 350
-    all_nodes = list(G.nodes)
-    random.seed(1)
-    subset_nodes = random.sample(all_nodes, subset_size)
-
-    # Create a subgraph with the subset of nodes
-    subgraph = G.subgraph(subset_nodes)
-    connected_pairs = set()
-    for u, v in subgraph.edges():
-        if u < v:
-            connected_pairs.add((u, v))
-        else:
-            connected_pairs.add((v, u))
-
-    # Find all unconnected article pairs in the subgraph
-    all_pairs = set((a, b) for a in subset_nodes for b in subset_nodes if a < b)
-    unconnected_pairs = all_pairs - connected_pairs
     # Remove direction and find attachment scores for unconnected nodes
-    subgraph_undirected = subgraph.to_undirected()
-    attachment_unconnected_scores = [score for _, _, score in nx.preferential_attachment(subgraph_undirected, ebunch=unconnected_pairs)]
+    attachment_unconnected_scores = [score for _, _, score in nx.preferential_attachment(G_undirected, ebunch=unconnected_pairs)]
 
     ############ Plotting Preferential Score Frequency and Values per Node Pairs ############
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6)) 
@@ -286,33 +255,22 @@ def calculate_preferential_attachment(G):
     plt.tight_layout()
     plt.show()
 
-def calculate_preferential_attachment_unconnected_zoomed(G):
+    return {
+        'PA_connected_scores': attachment_connected_scores,
+        'PA_unconnected_scores': attachment_unconnected_scores,
+    }
+
+
+
+
+def calculate_preferential_attachment_unconnected_zoomed(G, unconnected_pairs):
     ############ Connected Nodes ############
-    G_connected_undirected = G.to_undirected()
-    attachment_connected_vals = nx.preferential_attachment(G_connected_undirected)
+    G_undirected = G.to_undirected()
+    attachment_connected_vals = nx.preferential_attachment(G_undirected)
     attachment_connected_scores = [p for _, _, p in attachment_connected_vals]
 
     ############ Unconnected Nodes ############
-    subset_size = 350
-    all_nodes = list(G.nodes)
-    random.seed(1)
-    subset_nodes = random.sample(all_nodes, subset_size)
-
-    # Create a subgraph with the subset of nodes
-    subgraph = G.subgraph(subset_nodes)
-    connected_pairs = set()
-    for u, v in subgraph.edges():
-        if u < v:
-            connected_pairs.add((u, v))
-        else:
-            connected_pairs.add((v, u))
-
-    # Find all unconnected article pairs in the subgraph
-    all_pairs = set((a, b) for a in subset_nodes for b in subset_nodes if a < b)
-    unconnected_pairs = all_pairs - connected_pairs
-    # Remove direction and find attachment scores for unconnected nodes
-    subgraph_undirected = subgraph.to_undirected()
-    attachment_unconnected_scores = [score for _, _, score in nx.preferential_attachment(subgraph_undirected, ebunch=unconnected_pairs)]
+    attachment_unconnected_scores = [score for _, _, score in nx.preferential_attachment(G_undirected, ebunch=unconnected_pairs)]
 
     ############ Plotting Preferential Score Frequency and Values per Node Pairs ############
     
@@ -336,7 +294,7 @@ def calculate_preferential_attachment_unconnected_zoomed(G):
     plt.show()
 
 
-def calculate_common_neighbors(G):
+def calculate_common_neighbors(G, unconnected_pairs, subset_size=350):
     ############ Connected Nodes ############
     G_undirected = G.to_undirected()
     edges = G_undirected.edges()
@@ -346,25 +304,8 @@ def calculate_common_neighbors(G):
         common_neighbors_connected_counts.append(len(common_neighbors_connected_u_v))  
 
     ############ Unconnected Nodes ############
-    subset_size = 350
-    all_nodes = list(G.nodes)
-    random.seed(1)
-    subset_nodes = random.sample(all_nodes, subset_size)
-
-    # Create a subgraph with the subset of nodes
-    subgraph = G.subgraph(subset_nodes) # It doesn't matter that this part is directional because the nb of common neighbors is a symetrical quantity
-    connected_pairs = set()
-    for u, v in subgraph.edges():
-        if u < v:
-            connected_pairs.add((u, v))
-        else:
-            connected_pairs.add((v, u))
-
-    # Find all unconnected article pairs in the subgraph
-    all_pairs = set((a, b) for a in subset_nodes for b in subset_nodes if a < b)
-    unconnected_pairs = all_pairs - connected_pairs
     # Remove direction and find attachment scores for unconnected nodes
-    subgraph_undirected = subgraph.to_undirected()
+    unconnected_pairs = set(random.sample(list(unconnected_pairs), min(len(unconnected_pairs), subset_size**2)))
     common_neighbors_unconnected_counts = []
     for u, v in unconnected_pairs:
         common_neighbors_unconnected_u_v = list(nx.common_neighbors(G_undirected, u, v))  
@@ -392,33 +333,14 @@ def calculate_common_neighbors(G):
     plt.tight_layout()
     plt.show()
 
-def calculate_jaccards_coeff(G):
+def calculate_jaccards_coeff(G, unconnected_pairs):
     ############ Connected Nodes ############
-    G_connected_undirected = G.to_undirected()
-    jaccard_connected_vals = nx.jaccard_coefficient(G_connected_undirected)
+    G_undirected = G.to_undirected()
+    jaccard_connected_vals = nx.jaccard_coefficient(G_undirected)
     jaccard_connected_scores = [j for _, _, j in jaccard_connected_vals]
 
     ############ Unconnected Nodes ############
-    subset_size = 350
-    all_nodes = list(G.nodes)
-    random.seed(1)
-    subset_nodes = random.sample(all_nodes, subset_size)
-
-    # Create a subgraph with the subset of nodes
-    subgraph = G.subgraph(subset_nodes)
-    connected_pairs = set()
-    for u, v in subgraph.edges():
-        if u < v:
-            connected_pairs.add((u, v))
-        else:
-            connected_pairs.add((v, u))
-
-    # Find all unconnected article pairs in the subgraph
-    all_pairs = set((a, b) for a in subset_nodes for b in subset_nodes if a < b)
-    unconnected_pairs = all_pairs - connected_pairs
-    # Remove direction and find attachment scores for unconnected nodes
-    subgraph_undirected = subgraph.to_undirected()
-    jaccard_unconnected_scores = [score for _, _, score in nx.jaccard_coefficient(subgraph_undirected, ebunch=unconnected_pairs)]
+    jaccard_unconnected_scores = [score for _, _, score in nx.jaccard_coefficient(G_undirected, ebunch=unconnected_pairs)]
 
     ############ Plotting Jaccard's Coefficient Frequency and Values per Node Pairs ############
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6)) 
@@ -453,33 +375,63 @@ def calculate_jaccards_coeff(G):
     plt.tight_layout()
     plt.show()
 
-def calculate_adamic_adar(G):
+    return {
+        'jaccard_connected_scores': jaccard_connected_scores,
+        'jaccard_unconnected_scores': jaccard_unconnected_scores
+    }
+
+
+
+
+def calculate_jaccards_conditional_proba(scores):
+
+    # Define similarity bins 
+    bins = np.arange(-0.4, 1.05, 0.05)
+
+    # Calculate histograms (frequencies) for connected and unconnected nodes
+    connected_jaccards_counts, _ = np.histogram(scores['jaccard_connected_scores'], bins=bins)
+    unconnected_jaccards_counts, _ = np.histogram(scores['jaccard_unconnected_scores'], bins=bins)
+
+    connected_area = np.sum(connected_jaccards_counts)
+    unconnected_area = np.sum(unconnected_jaccards_counts)
+
+    connected_normalized = connected_jaccards_counts / connected_area
+    unconnected_normalized = unconnected_jaccards_counts / unconnected_area
+
+    # Create a DataFrame to store the results
+    df_jaccards = pd.DataFrame({
+        'bin_center': bins[:-1] + 0.025,  # Center of each bin
+        'connected': connected_jaccards_counts,
+        'unconnected': unconnected_jaccards_counts,
+        'connected_normalized': connected_normalized,
+        'unconnected_normalized': unconnected_normalized
+    })
+
+    # Calculate the conditional probability of a link in each bin
+     # Calculate the conditional probability of a link in each bin
+    df_jaccards['total_normalized'] = df_jaccards['connected_normalized'] + df_jaccards['unconnected_normalized']
+    df_jaccards['p(link|similarity)'] = df_jaccards['connected_normalized'] / df_jaccards['total_normalized']
+    
+    # Plot the conditional probability graph versus cosine similarity
+    plt.figure(figsize=(10, 6))
+    plt.bar(df_jaccards['bin_center'], df_jaccards['p(link|similarity)'], width=0.05, color='skyblue', edgecolor='black')
+    plt.xlabel('Jaccards similarity')
+    plt.ylabel('Estimated probability of a link between two random nodes')
+    plt.title('Estimated probability of a link between two random nodes according to jaccards similarity distribution')
+    plt.ylim(0, 1)
+    plt.grid(axis='y', linestyle='--', alpha=0.7)
+    plt.show()
+
+
+def calculate_adamic_adar(G, unconnected_pairs):
     ############ Connected Nodes ############
-    G_connected_undirected = G.to_undirected()
-    adar_connected_vals = nx.adamic_adar_index(G_connected_undirected)
+    G_undirected = G.to_undirected()
+    adar_connected_vals = nx.adamic_adar_index(G_undirected)
     adar_connected_scores = [j for _, _, j in adar_connected_vals]
 
     ############ Unconnected Nodes ############
-    subset_size = 350
-    all_nodes = list(G.nodes)
-    random.seed(1)
-    subset_nodes = random.sample(all_nodes, subset_size)
 
-    # Create a subgraph with the subset of nodes
-    subgraph = G.subgraph(subset_nodes)
-    connected_pairs = set()
-    for u, v in subgraph.edges():
-        if u < v:
-            connected_pairs.add((u, v))
-        else:
-            connected_pairs.add((v, u))
-
-    # Find all unconnected article pairs in the subgraph
-    all_pairs = set((a, b) for a in subset_nodes for b in subset_nodes if a < b)
-    unconnected_pairs = all_pairs - connected_pairs
-    # Remove direction and find attachment scores for unconnected nodes
-    subgraph_undirected = subgraph.to_undirected()
-    adar_unconnected_scores = [score for _, _, score in nx.adamic_adar_index(subgraph_undirected, ebunch=unconnected_pairs)]
+    adar_unconnected_scores = [score for _, _, score in nx.adamic_adar_index(G_undirected, ebunch=unconnected_pairs)]
 
     ############ Plotting Adamic/Adar Coefficient Frequency and Values per Node Pairs ############
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6)) 
