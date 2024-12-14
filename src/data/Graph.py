@@ -162,60 +162,85 @@ def Node2Vec_func(G):
     
     return cosine_sim_matrix, df_embeddings
 
-def calculate_negative_likelihood_and_labels(G, similarities):
+def calculate_labels_cos_similarity(G,similarities, non_link_threshold=0.4):
     """
-    Calculates negative likelihood scores and assigns labels to node pairs.
+    Assigns labels to node pairs based on fixed thresholds for cosine similarity.
 
     Args:
         G: The graph object.
         similarities: Dictionary containing connected and unconnected pairs with cosine similarities.
+        max_threshold_non_links: Maximum similarity threshold to classify pairs as non-links (label 0).
 
     Returns:
-        tuple: Two sets of pairs - candidates for link prediction and zero-label non-links.
+        tuple:
+            - candidates: Set of node pairs considered as candidates for link prediction.
+            - zero_label_non_links: Set of node pairs labeled as non-links (label=0).
     """
     # Extract unconnected pairs with cosine similarities
     unconnected_similarities = similarities['unconnected_pairs']
 
-    # Calculate negative likelihood scores for unconnected pairs
+    # Initialize sets for non-links and candidates
     zero_label_non_links = set()
     candidates = set()
+
+    # Calculate average similarity for connected pairs (threshold for candidates)
+    connected_scores = []
+    for u, v, data_edge in G.edges(data=True):
+        title_similarity = data_edge['weight_title']
+        description_similarity = data_edge['weight_description']
+        average_similarity = 0.5 * title_similarity + 0.5 * description_similarity
+        connected_scores.append(average_similarity)
+
+    min_threshold_candidates = sum(connected_scores) / len(connected_scores)
 
     # Process unconnected pairs
     for pair in unconnected_similarities:
         source, target = pair['source'], pair['target']
         title_similarity = pair['title_similarity']
         description_similarity = pair['description_similarity']
-        
-        # Negative likelihood score
-        score = 1 - (0.5 * title_similarity + 0.5 * description_similarity)
-        
-        # Categorize based on thresholds
-        if score > 0.9:  # Non-linked threshold
+        average_similarity = 0.5 * title_similarity + 0.5 * description_similarity
+
+        # Classify pairs based on thresholds
+        if average_similarity <= non_link_threshold:
             zero_label_non_links.add((source, target))
-        
-    # Calculate negative likelihood scores for connected pairs
-    connected_scores = []
-    for u, v, data_edge in G.edges(data=True):
-        title_similarity = data_edge['weight_title']
-        description_similarity = data_edge['weight_description']
+        elif average_similarity >= min_threshold_candidates:
+            candidates.add((source, target))
 
-        # Negative likelihood score
-        score = 1 - (0.5 * title_similarity + 0.5 * description_similarity)
-        connected_scores.append(score)
+    return candidates, zero_label_non_links
 
-    # Threshold for connected pairs
-    threshold_connected = sum(connected_scores) / len(connected_scores)
+def calculate_labels_jaccard(jaccard_scores, non_link_threshold=0.001):
+    """
+    Assigns labels to node pairs based on Jaccard coefficients using fixed thresholds.
 
-    # Add candidates for link prediction
-    for pair in unconnected_similarities:
-        source, target = pair['source'], pair['target']
-        title_similarity = pair['title_similarity']
-        description_similarity = pair['description_similarity']
+    Args:
+        G: The graph object.
+        jaccard_scores: Dictionary containing Jaccard's coefficients for connected and unconnected pairs.
+        max_threshold_non_links: Threshold below which unconnected pairs are considered non-links (label=0).
 
-        # Negative likelihood score
-        score = 1 - (0.5 * title_similarity + 0.5 * description_similarity)
+    Returns:
+        tuple:
+            - candidates: Set of node pairs considered as candidates for link prediction.
+            - zero_label_non_links: Set of node pairs labeled as non-links (label=0).
+    """
+    # Extract Jaccard scores
+    jaccard_connected_scores = [entry['score'] for entry in jaccard_scores['jaccard_connected_scores']]
+    jaccard_unconnected_scores = jaccard_scores['jaccard_unconnected_scores']
 
-        if score < threshold_connected:  # Connected threshold
+    # Calculate the threshold for connected pairs (mean of connected scores)
+    threshold_connected = sum(jaccard_connected_scores) / len(jaccard_connected_scores)
+
+    zero_label_non_links = set()
+    candidates = set()
+
+    # Process unconnected pairs
+    for entry in jaccard_unconnected_scores:
+        score = entry['score']
+        source = entry['source']
+        target = entry['target']
+
+        if score <= non_link_threshold:
+            zero_label_non_links.add((source, target))
+        elif score > non_link_threshold and score >= threshold_connected:
             candidates.add((source, target))
 
     return candidates, zero_label_non_links
@@ -393,7 +418,6 @@ class GraphDataLoader:
         
         # Convert node features to tensor
         node_features = torch.tensor(node_features, dtype=torch.float)
-        print(f'node_features: {node_features.shape}, all_links: {len(self.nodes)}')
 
         # Create edge feature tensor
         edge_features = torch.tensor([

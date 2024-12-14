@@ -337,22 +337,26 @@ def calculate_jaccards_coeff(G, unconnected_pairs):
     ############ Connected Nodes ############
     G_undirected = G.to_undirected()
     jaccard_connected_vals = nx.jaccard_coefficient(G_undirected)
-    jaccard_connected_scores = [j for _, _, j in jaccard_connected_vals]
+    jaccard_connected_scores = [{'source': u, 'target': v, 'score': j} for u, v, j in jaccard_connected_vals]
 
     ############ Unconnected Nodes ############
-    jaccard_unconnected_scores = [score for _, _, score in nx.jaccard_coefficient(G_undirected, ebunch=unconnected_pairs)]
+    jaccard_unconnected_vals = nx.jaccard_coefficient(G_undirected, ebunch=unconnected_pairs)
+    jaccard_unconnected_scores = [{'source': u, 'target': v, 'score': j} for u, v, j in jaccard_unconnected_vals]
 
     ############ Plotting Jaccard's Coefficient Frequency and Values per Node Pairs ############
+    connected_scores_only = [entry['score'] for entry in jaccard_connected_scores]
+    unconnected_scores_only = [entry['score'] for entry in jaccard_unconnected_scores]
+    
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6)) 
     fig.suptitle('Jaccard\'s Coefficient for Connected Pairs', fontsize=16)
-    ax1.hist(jaccard_connected_scores, bins=50, color='skyblue', edgecolor='black')
+    ax1.hist(connected_scores_only, bins=50, color='skyblue', edgecolor='black')
     ax1.set_title('Distribution of Jaccard\'s Coefficient for Node Pairs | Connected Pairs')
     ax1.set_xlabel('Jaccard\'s Coefficient')
     ax1.set_ylabel('Frequency')
     ax1.set_yscale('log')
     ax1.set_ylim(1e0,1e7)
-    ax1.set_xlim(0,np.max(jaccard_connected_scores))
-    ax2.scatter(range(len(jaccard_connected_scores)), jaccard_connected_scores, color='blue', alpha=0.5)
+    ax1.set_xlim(0,np.max(connected_scores_only))
+    ax2.scatter(range(len(connected_scores_only)), connected_scores_only, color='blue', alpha=0.5)
     ax2.set_title('Jaccard\'s Coefficient for Node Pairs | Connected Pairs')
     ax2.set_xlabel('Node Pair Index')
     ax2.set_ylabel('Jaccard\'s Coefficient')
@@ -361,14 +365,14 @@ def calculate_jaccards_coeff(G, unconnected_pairs):
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6)) 
     fig.suptitle('Jaccard\'s Coefficient for Unconnected Pairs', fontsize=16)
-    ax1.hist(jaccard_unconnected_scores, bins=50, color='skyblue', edgecolor='black')
+    ax1.hist(unconnected_scores_only, bins=50, color='skyblue', edgecolor='black')
     ax1.set_title('Distribution of Jaccard\'s Coefficient | Graph Subset | Unconnected Pairs')
     ax1.set_xlabel('Jaccard\'s Coefficient')
     ax1.set_ylabel('Frequency')
     ax1.set_yscale('log')
     ax1.set_ylim(1e0,1e7)
-    ax1.set_xlim(0,np.max(jaccard_connected_scores))
-    ax2.scatter(range(len(jaccard_unconnected_scores)), jaccard_unconnected_scores, color='blue', alpha=0.5)
+    ax1.set_xlim(0,np.max(unconnected_scores_only))
+    ax2.scatter(range(len(unconnected_scores_only)), unconnected_scores_only, color='blue', alpha=0.5)
     ax2.set_title('Jaccard\'s Coefficient for Node Pairs | Graph Subset | Unconnected Pairs')
     ax2.set_xlabel('Node Pair Index')
     ax2.set_ylabel('Jaccard\'s Coefficient')
@@ -388,9 +392,14 @@ def calculate_jaccards_conditional_proba(scores):
     # Define similarity bins 
     bins = np.arange(-0.4, 1.05, 0.05)
 
+    # Extract scores for connected and unconnected nodes
+    connected_jaccards_scores = [entry['score'] for entry in scores['jaccard_connected_scores']]
+    unconnected_jaccards_scores = [entry['score'] for entry in scores['jaccard_unconnected_scores']]
+
+
     # Calculate histograms (frequencies) for connected and unconnected nodes
-    connected_jaccards_counts, _ = np.histogram(scores['jaccard_connected_scores'], bins=bins)
-    unconnected_jaccards_counts, _ = np.histogram(scores['jaccard_unconnected_scores'], bins=bins)
+    connected_jaccards_counts, _ = np.histogram(connected_jaccards_scores, bins=bins)
+    unconnected_jaccards_counts, _ = np.histogram(unconnected_jaccards_scores, bins=bins)
 
     connected_area = np.sum(connected_jaccards_counts)
     unconnected_area = np.sum(unconnected_jaccards_counts)
@@ -427,23 +436,28 @@ def calculate_adamic_adar(G, unconnected_pairs):
     ############ Connected Nodes ############
     G_undirected = G.to_undirected()
     adar_connected_vals = nx.adamic_adar_index(G_undirected)
-    adar_connected_scores = [j for _, _, j in adar_connected_vals]
+    adar_connected_scores = [{'source': u, 'target': v, 'score': j} for u, v, j in adar_connected_vals]
 
     ############ Unconnected Nodes ############
+    adar_unconnected_vals = nx.adamic_adar_index(G_undirected, ebunch=unconnected_pairs)
+    adar_unconnected_scores = [{'source': u, 'target': v, 'score': j} for u, v, j in adar_unconnected_vals]
 
-    adar_unconnected_scores = [score for _, _, score in nx.adamic_adar_index(G_undirected, ebunch=unconnected_pairs)]
 
     ############ Plotting Adamic/Adar Coefficient Frequency and Values per Node Pairs ############
+    connected_scores_only = [entry['score'] for entry in adar_connected_scores]
+    unconnected_scores_only = [entry['score'] for entry in adar_unconnected_scores]
+    
+    
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6)) 
     fig.suptitle('Adamic/Adar Coefficient for Connected Pairs', fontsize=16)
-    ax1.hist(adar_connected_scores, bins=50, color='skyblue', edgecolor='black')
+    ax1.hist(connected_scores_only, bins=50, color='skyblue', edgecolor='black')
     ax1.set_title('Distribution of Adamic/Adar Coefficient for Node Pairs | Connected Pairs')
     ax1.set_xlabel('Adamic/Adar Coefficient')
     ax1.set_ylabel('Frequency')
     ax1.set_yscale('log')
     ax1.set_ylim(1e0,1e7)
-    ax1.set_xlim(0,np.max(adar_connected_scores))
-    ax2.scatter(range(len(adar_connected_scores)), adar_connected_scores, color='blue', alpha=0.5)
+    ax1.set_xlim(0,np.max(connected_scores_only))
+    ax2.scatter(range(len(connected_scores_only)), connected_scores_only, color='blue', alpha=0.5)
     ax2.set_title('Adamic/Adar Coefficient for Node Pairs | Connected Pairs')
     ax2.set_xlabel('Node Pair Index')
     ax2.set_ylabel('Adamic/Adar Coefficient')
@@ -452,20 +466,71 @@ def calculate_adamic_adar(G, unconnected_pairs):
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6)) 
     fig.suptitle('Adamic/Adar Coefficient for Unconnected Pairs', fontsize=16)
-    ax1.hist(adar_unconnected_scores, bins=50, color='skyblue', edgecolor='black')
+    ax1.hist(unconnected_scores_only, bins=50, color='skyblue', edgecolor='black')
     ax1.set_title('Distribution of Adamic/Adar Coefficient | Graph Subset | Unconnected Pairs')
     ax1.set_xlabel('Adamic/Adar Coefficient')
     ax1.set_ylabel('Frequency')
     ax1.set_yscale('log')
     ax1.set_ylim(1e0,1e7)
-    ax1.set_xlim(0,np.max(adar_connected_scores))
-    ax2.scatter(range(len(adar_unconnected_scores)), adar_unconnected_scores, color='blue', alpha=0.5)
+    ax1.set_xlim(0,np.max(unconnected_scores_only))
+    ax2.scatter(range(len(unconnected_scores_only)), unconnected_scores_only, color='blue', alpha=0.5)
     ax2.set_title('Adamic/Adar Coefficient for Node Pairs | Graph Subset | Unconnected Pairs')
     ax2.set_xlabel('Node Pair Index')
     ax2.set_ylabel('Adamic/Adar Coefficient')
-    ax2.set_ylim(0,np.max(adar_connected_scores))
+    ax2.set_ylim(0,np.max(unconnected_scores_only))
     plt.tight_layout()
     plt.show()
+
+    return {
+        'adar_connected_scores': adar_connected_scores,
+        'adar_unconnected_scores': adar_unconnected_scores
+    }
+
+
+def calculate_adar_conditional_proba(scores):
+
+    # Define similarity bins 
+    bins = np.arange(-0.4, 1.05, 0.05)
+
+    # Extract scores for connected and unconnected nodes
+    connected_adar_scores = [entry['score'] for entry in scores['adar_connected_scores']]
+    unconnected_adar_scores = [entry['score'] for entry in scores['adar_unconnected_scores']]
+
+
+    # Calculate histograms (frequencies) for connected and unconnected nodes
+    connected_adar_counts, _ = np.histogram(connected_adar_scores, bins=bins)
+    unconnected_adar_counts, _ = np.histogram(unconnected_adar_scores, bins=bins)
+
+    connected_area = np.sum(connected_adar_counts)
+    unconnected_area = np.sum(unconnected_adar_counts)
+
+    connected_normalized = connected_adar_counts / connected_area
+    unconnected_normalized = unconnected_adar_counts / unconnected_area
+
+    # Create a DataFrame to store the results
+    df_adar = pd.DataFrame({
+        'bin_center': bins[:-1] + 0.025,  # Center of each bin
+        'connected': connected_adar_counts,
+        'unconnected': unconnected_adar_counts,
+        'connected_normalized': connected_normalized,
+        'unconnected_normalized': unconnected_normalized
+    })
+
+    # Calculate the conditional probability of a link in each bin
+     # Calculate the conditional probability of a link in each bin
+    df_adar['total_normalized'] = df_adar['connected_normalized'] + df_adar['unconnected_normalized']
+    df_adar['p(link|similarity)'] = df_adar['connected_normalized'] / df_adar['total_normalized']
+    
+    # Plot the conditional probability graph versus cosine similarity
+    plt.figure(figsize=(10, 6))
+    plt.bar(df_adar['bin_center'], df_adar['p(link|similarity)'], width=0.05, color='skyblue', edgecolor='black')
+    plt.xlabel('Adamic-Adar Index')
+    plt.ylabel('Estimated probability of a link between two random nodes')
+    plt.title('Estimated probability of a link between two random nodes according to Adamic-Adar Index distribution')
+    #plt.ylim(0, 1)
+    plt.grid(axis='y', linestyle='--', alpha=0.7)
+    plt.show()
+
 
 def analyze_graph_statistics(G):
     """
