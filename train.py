@@ -254,7 +254,8 @@ def main():
     else:
         print("Creating Graph")
         G=create_graph(embedded_articles, df_links)
-        similarities = create_node_similarity_distributions(G)
+        unconnected_pairs = create_subset_unconnected_nodes(G)
+        similarities = create_node_similarity_distributions(G, unconnected_pairs)
         candidates, zero_label_non_links = calculate_negative_likelihood_and_labels(G, similarities)
 
         data_loader = GraphDataLoader(G, candidates, zero_label_non_links, args.features_to_drop)
