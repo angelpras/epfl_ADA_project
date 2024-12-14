@@ -232,7 +232,8 @@ def node2index_maps(embedded_articles):
     return node_to_index, index_to_node
 
 class GraphDataLoader:
-    def __init__(self, graph: nx.DiGraph, candidates: set=None, zero_label_non_links: set=None):
+    def __init__(self, graph: nx.DiGraph, candidates: set=None,
+                 zero_label_non_links: set=None, feature_to_drop: List[str]=[]):
         """
         Initialize the data loader with a directed graph
         
@@ -242,6 +243,8 @@ class GraphDataLoader:
         self.graph = graph
         self.candidates = candidates
         self.zero_label_non_links = zero_label_non_links
+        self.feature_to_drop = feature_to_drop
+        
         self.node_features = {}
         self.edge_features = {}
 
@@ -266,11 +269,16 @@ class GraphDataLoader:
             title_embedding = self.graph.nodes[node].get('embedding_title', None)
             desc_embedding = self.graph.nodes[node].get('embedding_description', None)
             
-            self.node_features[node] = {
+            node_features = {
                 'title_embedding': title_embedding,
                 'description_embedding': desc_embedding,
                 'pagerank': pagerank.get(node, 0),
                 'eigenvector_centrality': eigenvector_centrality.get(node, 0)
+            }
+
+            # Filter out features listed in feature_to_drop
+            self.node_features[node] = {
+                feature: value for feature, value in node_features.items() if feature not in self.feature_to_drop
             }
 
     def compute_edge_features(self) -> None:
@@ -308,13 +316,17 @@ class GraphDataLoader:
             if u_neighbors or v_neighbors:
                 jaccard_sim = len(u_neighbors.intersection(v_neighbors)) / len(u_neighbors.union(v_neighbors))
             
-            # Store computed features
-            self.edge_features[(u, v)] = {
+            edge_features = {
                 'title_similarity': title_similarity,
                 'description_similarity': description_similarity,
                 'jaccard_similarity': jaccard_sim,
                 'adamic_adar_index': adamic_adar_index,
-                'preferential_attachment': preferential_attachment
+                'preferential_attachment': preferential_attachment,
+            }
+
+            # Filter out features listed in feature_to_drop
+            self.edge_features[(u, v)] = {
+                feature: value for feature, value in edge_features.items() if feature not in self.feature_to_drop
             }
 
     def create_pyg_dataset(self) -> Data:
@@ -333,9 +345,11 @@ class GraphDataLoader:
         
         # Get positive links
         positive_links = list(self.graph.edges())
-        
+        positive_links.sort() # Sort for reproducibility
+
         # Get negative samples
         negative_links = list(self.zero_label_non_links)
+        negative_links.sort() # Sort for reproducibility
         
         # Convert links to index-based representation
         indexed_positive_links = [(self.node_to_index[u], self.node_to_index[v]) for u, v in positive_links]
@@ -362,8 +376,8 @@ class GraphDataLoader:
         node_features = []
         for node in self.nodes:
             # Extract features, converting to list and handling potential None values
-            title_embedding = self.node_features[node].get('title_embedding', [0] * 768)  # Default 768-dim zero vector
-            desc_embedding = self.node_features[node].get('description_embedding', [0] * 768)
+            title_embedding = self.node_features[node].get('title_embedding', [0] * 384)  # Default 384-dim zero vector
+            desc_embedding = self.node_features[node].get('description_embedding', [0] * 384)
             pagerank = [self.node_features[node].get('pagerank', 0)]
             eigenvector = [self.node_features[node].get('eigenvector_centrality', 0)]
             
@@ -379,6 +393,7 @@ class GraphDataLoader:
         
         # Convert node features to tensor
         node_features = torch.tensor(node_features, dtype=torch.float)
+        print(f'node_features: {node_features.shape}, all_links: {len(self.nodes)}')
 
         # Create edge feature tensor
         edge_features = torch.tensor([

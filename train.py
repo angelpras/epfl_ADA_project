@@ -2,6 +2,7 @@ import torch
 import sys
 import os
 import pickle
+import argparse
 from tqdm import tqdm
 
 sys.path.append(os.path.abspath(os.path.join(os.getcwd(), 'src')))
@@ -11,6 +12,41 @@ from data.Graph import *
 from data.Preprocessing import *
 from utils.Visualization import *
 
+def parse_args():
+    parser = argparse.ArgumentParser(description='Train a GCN model for link prediction with ablation studies')
+    
+    # Define possible node and edge features
+    node_features = [
+        'title_embedding',
+        'description_embedding',
+        'pagerank',
+        'eigenvector_centrality'
+    ]
+    edge_features = [
+        "title_similarity",
+        "description_similarity",
+        "jaccard_similarity",
+        "adamic_adar_index",
+        "preferential_attachment"
+    ]
+    
+    # Add argument to specify features to remove
+    parser.add_argument(
+        '--features_to_drop',
+        nargs='+',  # Allows specifying multiple features as a list
+        choices=node_features + edge_features,  # Restrict valid inputs to defined features
+        help=(
+            "Specify features to remove for ablation study. "
+            "Node features: {node}. "
+            "Edge features: {edge}."
+            .format(
+                node=", ".join(node_features),
+                edge=", ".join(edge_features)
+            )
+        )
+    )
+
+    return parser.parse_args()
 
 def train_gcn(model, train_loader, val_loader, criterion, optimizer, 
               device, epochs=2, early_stopping_patience=10):
@@ -194,8 +230,10 @@ def model_infer(model, test_loader, index_to_node, device, threshold = 0.95):
 
 # Example usage
 def main():
-    device = torch.device('mps' if torch.backends.mps.is_available() else 'cuda' if torch.cuda.is_available() else 'cpu')
+    torch.manual_seed(42)
 
+    device = torch.device('mps' if torch.backends.mps.is_available() else 'cuda' if torch.cuda.is_available() else 'cpu')
+    args = parse_args()
     data_path = os.path.abspath(os.path.join(os.getcwd(), 'data'))
     df_links = preprocessing_links(data_path)
 
@@ -219,7 +257,7 @@ def main():
         similarities = create_node_similarity_distributions(G)
         candidates, zero_label_non_links = calculate_negative_likelihood_and_labels(G, similarities)
 
-        data_loader = GraphDataLoader(G, candidates, zero_label_non_links)
+        data_loader = GraphDataLoader(G, candidates, zero_label_non_links, args.features_to_drop)
         dataset, candidates_dataset = data_loader.create_pyg_dataset()
         with open('graph_dataset.pkl', 'wb') as f:
             pickle.dump(dataset, f)
@@ -239,7 +277,7 @@ def main():
 
     if os.path.exists('best_gcn_model.pth'):
         # If model already trained, load it
-        model.load_state_dict(torch.load('best_gcn_model.pth', weights_only=True))
+        model.load_state_dict(torch.load('best_gcn_model.pth', map_location=device, weights_only=True))
     # else:
     # Loss and optimizer
     criterion = torch.nn.BCELoss()
