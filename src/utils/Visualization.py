@@ -5,6 +5,8 @@ import itertools
 import seaborn as sns
 import pandas as pd
 import numpy as np
+import plotly.express as px
+import plotly.graph_objects as go
 
 from sklearn.metrics.pairwise import cosine_similarity
 from sentence_transformers.util import dot_score
@@ -566,3 +568,394 @@ def analyze_graph_statistics(G):
     print(f"Network density: {density:.4f}")
     print(f"Clustering coefficient: {clustering_coeff:.4f}")
     print(f"Average Shortest path: {avg_path_length:.4f}")
+    
+def Visualization_post_model(df_links):
+    # Create Graph from Predicted Links
+    G = nx.from_pandas_edgelist(df_links, source="Source", target="Target", create_using=nx.DiGraph())
+
+    # 1. Frequency Analysis
+    source_counts = df_links["Source"].value_counts()
+    target_counts = df_links["Target"].value_counts()
+
+    fig_source = px.bar(
+        x=source_counts.head(10).index,
+        y=source_counts.head(10).values,
+        title="Top 10 Sources",
+        labels={'x': 'Source', 'y': 'Frequency'},
+        text=source_counts.head(10).values,  # Add text for the bar values
+        color=source_counts.head(10).values,
+        color_continuous_scale=px.colors.sequential.Sunset
+    )
+
+    # Adjust text position and layout
+    fig_source.update_traces(
+        texttemplate='%{text}',  # Show the text
+        textposition='outside'  # Move text outside the bar
+    )
+    fig_source.update_layout(
+        xaxis=dict(tickangle=45),
+        margin=dict(t=80, b=50, l=50, r=50),  # Adjust top margin to prevent text clipping
+        yaxis=dict(range=[0, source_counts.head(10).values.max() + 1])  # Add space above bars
+    )
+
+    fig_source.show()
+
+    # Interactive Plot for Top 10 Targets
+    fig_target = px.bar(
+        x=target_counts.head(10).index,
+        y=target_counts.head(10).values,
+        title="Top 10 Targets",
+        labels={'x': 'Target', 'y': 'Frequency'},
+        text=target_counts.head(10).values,
+        color=target_counts.head(10).values,
+        color_continuous_scale=px.colors.sequential.Viridis
+    )
+    fig_target.update_traces(texttemplate='%{text}', textposition='outside')
+    fig_target.update_layout(xaxis=dict(tickangle=45))
+    fig_target.show()
+
+    # 2. Degree Distribution
+    print("Degree Distribution")
+    degrees = [deg for _, deg in G.degree()]
+
+    # Interactive Plot for Degree Distribution
+    fig_degree = px.histogram(
+        degrees,
+        nbins=20,
+        title="Degree Distribution",
+        labels={'value': 'Degree', 'count': 'Frequency'},
+        color_discrete_sequence=["#636EFA"]
+    )
+    fig_degree.update_layout(
+        xaxis_title="Degree",
+        yaxis_title="Frequency",
+        bargap=0.1
+    )
+    fig_degree.show()
+
+    # 4. Graph Visualization
+    print("Graph Visualization")
+
+    # Get node positions for visualization
+    pos = nx.spring_layout(G, seed=42)
+
+    # Extract node positions for Plotly
+    node_x = [pos[node][0] for node in G.nodes()]
+    node_y = [pos[node][1] for node in G.nodes()]
+    edge_x = []
+    edge_y = []
+
+    # Extract edges for Plotly
+    for edge in G.edges():
+        x0, y0 = pos[edge[0]]
+        x1, y1 = pos[edge[1]]
+        edge_x.append(x0)
+        edge_x.append(x1)
+        edge_x.append(None)
+        edge_y.append(y0)
+        edge_y.append(y1)
+        edge_y.append(None)
+
+    # Create edge traces
+    edge_trace = go.Scatter(
+        x=edge_x,
+        y=edge_y,
+        line=dict(width=0.5, color='#888'),
+        hoverinfo='none',
+        mode='lines'
+    )
+
+    # Create node traces
+    node_trace = go.Scatter(
+        x=node_x,
+        y=node_y,
+        mode='markers',
+        hoverinfo='text',
+        marker=dict(
+            size=10,
+            color=list(dict(G.degree()).values()),  # Use degree as node color
+            colorscale='Viridis',
+            colorbar=dict(
+                title="Node Degree"
+            ),
+            line_width=2
+        )
+    )
+
+    # Add hover info for nodes
+    node_text = [f"Node: {node}<br>Degree: {deg}" for node, deg in G.degree()]
+    node_trace.text = node_text
+
+    # Create the figure
+    fig_graph = go.Figure(data=[edge_trace, node_trace],
+                        layout=go.Layout(
+                            title="Interactive Graph of Predicted Links",
+                            titlefont_size=16,
+                            showlegend=False,
+                            hovermode='closest',
+                            margin=dict(b=0, l=0, r=0, t=40),
+                            xaxis=dict(showgrid=False, zeroline=False),
+                            yaxis=dict(showgrid=False, zeroline=False)
+                        ))
+
+    # Show the interactive graph
+    fig_graph.show()
+    
+def Visualization_categories_distribution(df_links_,df_categories):
+    df_links_source=df_links_.copy()
+    df_links_source = df_links_source.merge(df_categories[['Article', 'Category_Level_1']], 
+                            left_on='Source', right_on='Article', how='left')
+
+    # Rename Source categories
+    df_links_source = df_links_source.rename(columns={
+        'Category_Level_1': 'Source_Category_1',
+    })
+    df_links_target=df_links_.copy()
+    # Merge categories for the Target nodes
+    df_links_target = df_links_target.merge(df_categories[['Article', 'Category_Level_1']], 
+                            left_on='Target', right_on='Article', how='left')
+
+    # Rename Target categories
+    df_links_target = df_links_target.rename(columns={
+        'Category_Level_1': 'Target_Category_1',
+    })
+
+    # Combine all categories (Source and Target) into one column
+    source_columns = ['Source_Category_1']
+    target_columns = ['Target_Category_1']
+
+    source_categories = pd.concat([df_links_source[col] for col in source_columns], ignore_index=True)
+    target_categories = pd.concat([df_links_target[col] for col in target_columns], ignore_index=True)
+    all_categories = pd.concat([source_categories,target_categories])
+
+    # Count the frequency of categories 
+    category_counts = all_categories.value_counts().reset_index()
+    category_counts.columns = ['Category', 'Frequency']
+    source_category_counts = source_categories.value_counts().reset_index()[:10]
+    source_category_counts.columns = ['Category', 'Frequency']
+    target_category_counts = target_categories.value_counts().reset_index()[:10]
+    target_category_counts.columns = ['Category', 'Frequency']
+
+    # Drop NaN values
+    #all_categories = all_categories.dropna()
+
+    # Create an interactive bar chart using Plotly
+    fig = px.bar(
+        category_counts,
+        x='Category',
+        y='Frequency',
+        title='Distribution of Categories for Predicted Links',
+        labels={'Frequency': 'Count', 'Category': 'Category'},
+        hover_data={'Category': True, 'Frequency': True},
+        text='Frequency',
+        color='Frequency',
+        color_continuous_scale=px.colors.sequential.Sunset
+    )
+
+    fig.update_traces(texttemplate='%{text}', textposition='outside')
+    fig.update_layout(
+        xaxis=dict(tickangle=45, title='Category'),
+        yaxis=dict(title='Frequency'),
+        template='plotly_dark',
+        title_font_size=20,
+        title_x=0.5,
+        margin=dict(l=50, r=50, t=80, b=150),
+        height=600,
+        width=1000
+    )
+    fig.show()
+
+    # Plot Source Category Distribution using Plotly
+    fig_source = px.bar(
+        source_category_counts,
+        x='Category',
+        y='Frequency',
+        title='Distribution of Categories for Source Nodes',
+        labels={'Frequency': 'Count', 'Category': 'Category'},
+        hover_data={'Category': True, 'Frequency': True},
+        text='Frequency',
+        color='Frequency',
+        color_continuous_scale=px.colors.sequential.Sunset
+    )
+
+    fig_source.update_traces(texttemplate='%{text}', textposition='outside')
+    fig_source.update_layout(
+        xaxis=dict(tickangle=45, title='Category'),
+        yaxis=dict(title='Frequency'),
+        template='plotly_dark',
+        title_font_size=20,
+        title_x=0.5,
+        margin=dict(l=50, r=50, t=80, b=150),
+        height=600,
+        width=1000
+    )
+    fig_source.show()
+
+    # Plot Target Category Distribution using Plotly
+    fig_target = px.bar(
+        target_category_counts,
+        x='Category',
+        y='Frequency',
+        title='Distribution of Categories for Target Nodes',
+        labels={'Frequency': 'Count', 'Category': 'Category'},
+        hover_data={'Category': True, 'Frequency': True},
+        text='Frequency',
+        color='Frequency',
+        color_continuous_scale=px.colors.sequential.Sunset
+    )
+
+    fig_target.update_traces(texttemplate='%{text}', textposition='outside')
+    fig_target.update_layout(
+        xaxis=dict(tickangle=45, title='Category'),
+        yaxis=dict(title='Frequency'),
+        template='plotly_dark',
+        title_font_size=20,
+        title_x=0.5,
+        margin=dict(l=50, r=50, t=80, b=150),
+        height=600,
+        width=1000
+    )
+    fig_target.show()
+
+def visualization_pie_charts(df_links_, df_categories):
+    df_links_pie=df_links_.copy()
+
+    # Merge categories for the Source nodes
+    df_links_pie = df_links_pie.merge(df_categories[['Article', 'Category_Level_1']], 
+                            left_on='Source', right_on='Article', how='left')
+
+    # Rename Source categories
+    df_links_pie = df_links_pie.rename(columns={
+        'Category_Level_1': 'Source_Category',
+    })
+
+    # Merge categories for the Target nodes
+    df_links_pie = df_links_pie.merge(df_categories[['Article', 'Category_Level_1']], 
+                            left_on='Target', right_on='Article', how='left')
+
+    # Rename Target categories
+    df_links_pie = df_links_pie.rename(columns={
+        'Category_Level_1': 'Target_Category',
+    })
+
+    # Drop the duplicate 'Article' column after the second merge
+    df_links_pie = df_links_pie.drop(columns=['Article_x','Article_y'])
+
+    # Step 1: Identify the 4 most common source categories
+    top_source_categories = (
+        df_links_pie['Source_Category']
+        .value_counts()
+        .head(4)
+        .index.tolist()
+    )
+
+    # Step 2: Filter the dataset for rows where the source category is in the top 10
+    filtered_links = df_links_pie[df_links_pie['Source_Category'].isin(top_source_categories)]
+
+    # Step 3: Group by Source_Category and Target_Category to calculate percentages
+    redirect_counts = (
+        filtered_links.groupby(['Source_Category', 'Target_Category'])
+        .size()
+        .reset_index(name='Count')
+    )
+
+    # Step 4: Normalize counts to percentages within each source category
+    redirect_counts['Percentage'] = (
+        redirect_counts.groupby('Source_Category')['Count']
+        .transform(lambda x: x / x.sum() * 100)
+    )
+
+    # Step 5: Create one pie chart per source category
+    for source_category in top_source_categories:
+        # Filter data for the current source category
+        data = redirect_counts[redirect_counts['Source_Category'] == source_category]
+
+        # Create a pie chart using Plotly
+        fig = px.pie(
+            data,
+            names='Target_Category',
+            values='Percentage',
+            title=f'Redirections from Articles belonging to {source_category} category',
+            color='Target_Category',
+            color_discrete_sequence=px.colors.sequential.Sunset
+        )
+
+        # Enhance layout and interactivity
+        fig.update_traces(textinfo='percent+label')
+        fig.update_layout(
+            title_font_size=18,
+            title_x=0.5,
+            height=600,
+            width=800
+        )
+
+        # Show the pie chart
+        fig.show()
+
+def Visualization_error_bars(df_links_, df_categories):
+    #Load the correct file
+    df_links_with_pred=pd.read_csv("linked_nodes_with_predictions_test.csv",sep=",")
+
+    # Merge categories for Source and Target nodes (consider all levels)
+    df_links_with_pred = df_links_with_pred.merge(
+        df_categories[['Article', 'Category_Level_1']],
+        left_on='Source',
+        right_on='Article',
+        how='inner'
+    ).rename(columns={
+        'Category_Level_1': 'Source_Category_1',
+    })
+
+    df_links_with_pred = df_links_with_pred.merge(
+        df_categories[['Article', 'Category_Level_1']],
+        left_on='Target',
+        right_on='Article',
+        how='inner'
+    ).rename(columns={
+        'Category_Level_1': 'Target_Category_1'
+    })
+
+    # Drop the extra 'Article' columns from the merges
+    df_links_with_pred = df_links_with_pred.drop(columns=['Article_x', 'Article_y'])
+
+
+    # Combine all categories into a single column by creating DataFrames
+    source_categories = df_links_with_pred[['Source_Category_1']].copy()
+    source_categories['Prediction_Correct'] = df_links_with_pred['Prediction'] == df_links_with_pred['Correct_Prediction']
+    source_categories = source_categories.rename(columns={'Source_Category_1': 'Category'})
+
+    target_categories = df_links_with_pred[['Target_Category_1']].copy()
+    target_categories['Prediction_Correct'] = df_links_with_pred['Prediction'] == df_links_with_pred['Correct_Prediction']
+    target_categories = target_categories.rename(columns={'Target_Category_1': 'Category'})
+
+    # Combine source and target categories
+    all_categories = pd.concat([source_categories, target_categories], ignore_index=True)
+
+    # Group by category and calculate the counts of correct and incorrect predictions
+    category_stats = all_categories.groupby('Category')['Prediction_Correct'] \
+                                    .value_counts(normalize=False) \
+                                    .unstack(fill_value=0)
+
+    # Normalize to get percentages
+    category_stats_normalized = category_stats.div(category_stats.sum(axis=1), axis=0)
+    category_stats_normalized.to_csv("Bar_data")
+    # Limit the number of categories (e.g., top 20 based on total predictions)
+    top_categories = category_stats.sum(axis=1).nlargest(10).index
+    category_stats_top = category_stats.loc[top_categories]
+    category_stats_normalized_top = category_stats_top.div(category_stats_top.sum(axis=1), axis=0)
+
+    # Plot as a horizontal bar chart
+    fig, ax = plt.subplots(figsize=(10, 8))
+    category_stats_normalized_top.sort_values(by=False, ascending=False).plot(
+        kind='barh',
+        stacked=True,
+        ax=ax,
+        color=['orange', 'skyblue'],
+        edgecolor='black'
+    )
+    plt.title('Prediction Accuracy by Individual Categories', fontsize=16)
+    plt.xlabel('Proportion', fontsize=14)
+    plt.ylabel('Category', fontsize=14)
+    plt.legend(title='Prediction Correct', labels=['Incorrect', 'Correct'], fontsize=12)
+    plt.tight_layout()
+    plt.show()
