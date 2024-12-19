@@ -206,71 +206,72 @@ def calculate_links_conditional_proba(similarities):
     plt.show()
 
 def calculate_preferential_attachment(G, unconnected_pairs):
-    ############ Connected Nodes ############
+    # Convert to undirected graph and calculate scores
     G_undirected = G.to_undirected()
+    
+    # Calculate scores for connected and unconnected pairs
     attachment_connected_vals = nx.preferential_attachment(G_undirected)
-    attachment_connected_scores = [p for _, _, p in attachment_connected_vals]
-
-    ############ Unconnected Nodes ############
-    # Remove direction and find attachment scores for unconnected nodes
-    attachment_unconnected_scores = [score for _, _, score in nx.preferential_attachment(G_undirected, ebunch=unconnected_pairs)]
-
-    ############ Plotting Preferential Score Frequency and Values per Node Pairs ############
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6)) 
+    attachment_connected_scores = [{'source': u, 'target': v, 'score': j} 
+                                 for u, v, j in attachment_connected_vals]
+    
+    attachment_unconnected_vals = nx.preferential_attachment(G_undirected, ebunch=unconnected_pairs)
+    attachment_unconnected_scores = [{'source': u, 'target': v, 'score': j} 
+                                   for u, v, j in attachment_unconnected_vals]
+    
+    # Extract scores for plotting
+    connected_scores = [entry['score'] for entry in attachment_connected_scores]
+    unconnected_scores = [entry['score'] for entry in attachment_unconnected_scores]
+    
+    # Plot connected pairs
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))
     fig.suptitle('Preferential Attachment Scores for Connected Pairs | Same x-axis', fontsize=16)
-    ax1.hist(attachment_connected_scores, bins=50, color='skyblue', edgecolor='black')
+    
+    ax1.hist(connected_scores, bins=50, color='skyblue', edgecolor='black')
     ax1.set_title('Preferential Attachment Scores for Node Pairs | Connected Pairs')
     ax1.set_xlabel('Preferential Attachment Score')
     ax1.set_ylabel('Frequency')
     ax1.set_yscale('log')
-    #ax1.set_xscale('log')
-    ax1.set_xlim(0,np.max(attachment_connected_scores))
+    ax1.set_xlim(0, np.max(connected_scores))
     ax1.set_ylim(1e0, 1e7)
-    ax2.scatter(range(len(attachment_connected_scores)), attachment_connected_scores, color='blue', alpha=0.5)
+    
+    ax2.scatter(range(len(connected_scores)), connected_scores, color='blue', alpha=0.5)
     ax2.set_title('Preferential Attachment Scores for Node Pairs | Connected Pairs')
     ax2.set_xlabel('Node Pair Index')
     ax2.set_ylabel('Preferential Attachment Score')
-    ax2.set_ylim(0,np.max(attachment_connected_scores))
-    #ax2.set_yscale('log')
-    #ax2.set_xscale()
+    ax2.set_ylim(0, np.max(connected_scores))
+    
     plt.tight_layout()
     plt.show()
-
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6)) 
+    
+    # Plot unconnected pairs
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))
     fig.suptitle('Preferential Attachment Scores for Unconnected Pairs', fontsize=16)
-    ax1.hist(attachment_unconnected_scores, bins=50, color='skyblue', edgecolor='black')
+    
+    ax1.hist(unconnected_scores, bins=50, color='skyblue', edgecolor='black')
     ax1.set_title('Distribution of Preferential Attachment Scores | Graph Subset | Unconnected Pairs')
     ax1.set_xlabel('Preferential Attachment Score')
     ax1.set_ylabel('Frequency')
     ax1.set_yscale('log')
-    #ax1.set_xscale('log')
-    ax1.set_xlim(0,np.max(attachment_connected_scores))
+    ax1.set_xlim(0, np.max(connected_scores))
     ax1.set_ylim(1e0, 1e7)
-
-    #ax1.set_xlim(0,np.max(attachment_connected_scores))
-    ax2.scatter(range(len(attachment_unconnected_scores)), attachment_unconnected_scores, color='blue', alpha=0.5)
+    
+    ax2.scatter(range(len(unconnected_scores)), unconnected_scores, color='blue', alpha=0.5)
     ax2.set_title('Preferential Attachment Scores for Node Pairs | Graph Subset | Unconnected Pairs')
     ax2.set_xlabel('Node Pair Index')
     ax2.set_ylabel('Preferential Attachment Score')
-    ax2.set_ylim(0,np.max(attachment_connected_scores))
-    #ax2.set_yscale('log')
+    ax2.set_ylim(0, np.max(connected_scores))
+    
     plt.tight_layout()
     plt.show()
-
+    
     return {
-        'PA_connected_scores': attachment_connected_scores,
-        'PA_unconnected_scores': attachment_unconnected_scores,
+        'connected_scores': attachment_connected_scores,
+        'unconnected_scores': attachment_unconnected_scores
     }
-
-
-
 
 def calculate_preferential_attachment_unconnected_zoomed(G, unconnected_pairs):
     ############ Connected Nodes ############
     G_undirected = G.to_undirected()
-    attachment_connected_vals = nx.preferential_attachment(G_undirected)
-    attachment_connected_scores = [p for _, _, p in attachment_connected_vals]
-
     ############ Unconnected Nodes ############
     attachment_unconnected_scores = [score for _, _, score in nx.preferential_attachment(G_undirected, ebunch=unconnected_pairs)]
 

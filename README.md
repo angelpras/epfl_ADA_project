@@ -68,7 +68,6 @@ To maximize the performance of our GNN, we designed features that capture variou
 - PageRank: Assigns a ranking score to each node, indicating its relative importance in the network.
 - Eigenvector Centrality: Measures a node's influence within the graph based on its connections.
 - Text Embeddings: We embed article titles and descriptions using vector representations.
-- Common Neighbors: Quantifies the overlap in the neighborhood between pairs of nodes.
 
 #### Edge features
 
@@ -76,10 +75,6 @@ To maximize the performance of our GNN, we designed features that capture variou
 - Jaccard Similarity: Measures the proportion of shared neighbors between two nodes.
 - Adamic-Adar Index: A weighted sum of shared neighbors, placing more weight on less-connected nodes.
 - Preferential Attachment: Predicts links based on the degree of the nodes.
-
-#### Graph features
-
-- Node2Vec: Generates node embeddings that capture graph structure and connectivity by exploring random walks.
 
 ### Training/Validation/Testing Sample Choice
 
@@ -90,9 +85,9 @@ We will begin by using existing links as positive examples, labeled as 1. To ide
    - **Content Similarity**: Connected pairs often exhibit higher content similarity scores.
    - **Common Neighbors**: Connected pairs usually share a greater number of common neighbors.
 
-2. **Negative Likelihood Score Calculation**: Based on the feature distributions, a **negative likelihood score** is assigned to unconnected pairs. This score weights each feature according to its contribution to low connection likelihood.
+2. **Negative Likelihood Score Calculation**: Based on the feature distributions, pairs which exhibit higher scores than the average for connected nodes are selected as candidates for link prediction.
 
-3. **Threshold for Negative Examples**: A threshold is set for the negative likelihood score. Unconnected pairs with scores above this threshold are designated as negative examples (label 0) during training and validation, helping the model learn distinctions between likely and unlikely connections. A second threshold is then also set where all the unconnected pairs with scores below this threshold are considered as candidates for link prediction.
+3. **Threshold for Negative Examples**: The most dissimilar pairs, based on feature distributions, are assigned a 0 label as negative samples. A fixed number of these pairs are selected to create a balanced dataset with an equal number of 1 label connections already present.
 
 ### Graph Convolutional Network
 

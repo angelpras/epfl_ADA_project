@@ -148,7 +148,7 @@ def calculate_labels_jaccard(jaccard_scores, zero_label_non_links):
     
     Args:
         jaccard_scores: Dictionary containing Jaccard coefficients for unconnected pairs
-                       in the format {'jaccard_unconnected_scores': [{'source': node1, 
+                       in the format {'unconnected_scores': [{'source': node1, 
                        'target': node2, 'score': float}]}.
         zero_label_non_links: Initial set of node pairs labeled as non-links to be filtered.
     
@@ -158,14 +158,14 @@ def calculate_labels_jaccard(jaccard_scores, zero_label_non_links):
                                      Jaccard score observed across all unconnected pairs.
     """
     # Get list of Jaccard scores for unconnected pairs
-    jaccard_unconnected_scores = [entry['score'] for entry in jaccard_scores['jaccard_unconnected_scores']]
+    jaccard_unconnected_scores = [entry['score'] for entry in jaccard_scores['unconnected_scores']]
     maximal_unconnected_score = max(jaccard_unconnected_scores)
     
     # Keep only non-links whose Jaccard score doesn't exceed the maximum observed score
     filtered_zero_label_non_links = set(
         (source, target) for source, target in zero_label_non_links
         if next(
-            (entry['score'] for entry in jaccard_scores['jaccard_unconnected_scores']
+            (entry['score'] for entry in jaccard_scores['unconnected_scores']
              if entry['source'] == source and entry['target'] == target),
             0
         ) <= maximal_unconnected_score
