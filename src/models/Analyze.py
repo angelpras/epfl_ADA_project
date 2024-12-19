@@ -15,7 +15,7 @@ def parse_output_log(file_path):
                 val_losses.append(float(epoch_match.group(3)))
     return val_losses
 
-def plot_validation_loss_curves(results_dir):
+def plot_validation_loss_curves(results_dir, save=True):
     """Plot validation loss curves for all experiments on a single graph."""
     # Prepare the figure
     fig = go.Figure()
@@ -57,12 +57,15 @@ def plot_validation_loss_curves(results_dir):
         yaxis=dict(showgrid=True, gridcolor='gray')
     )
 
+    if not save:
+        fig.show()
+        return
     # Save the figure
     output_path = os.path.join(results_dir, "all_experiments_validation_loss.html")
     fig.write_html(output_path)
     print(f"Saved comparative validation loss curves at {output_path}")
 
-def plot_experiment_metrics(results_dir):
+def plot_experiment_metrics(results_dir, save=True):
     """Parse and plot performance metrics across experiments."""
     # Prepare to store metrics
     experiment_metrics = {}
@@ -74,7 +77,8 @@ def plot_experiment_metrics(results_dir):
         # Check if it's a directory
         if os.path.isdir(experiment_path):
             output_log_path = os.path.join(experiment_path, "output.log")
-            
+            if experiment_path.endswith('jaccard_similarity') or experiment_path.endswith('adamic_adar_index') or experiment_path.endswith('preferential_attachment'):
+                continue
             # Check if output.log exists
             if os.path.exists(output_log_path):
                 with open(output_log_path, 'r') as f:
@@ -111,8 +115,6 @@ def plot_experiment_metrics(results_dir):
     # Add bars for each metric type
     for i, metric in enumerate(metrics_types):
         for j, (exp, metrics) in enumerate(experiment_metrics.items()):
-            if exp == 'jaccard_similarity' or exp =='adamic_adar_index' or exp == 'preferential_attachment':
-                continue
             metric_value = metrics[metric]
             
             # Determine if this is the first time this experiment appears in the legend
@@ -161,6 +163,9 @@ def plot_experiment_metrics(results_dir):
         barmode='group'
     )
     
+    if not save:
+        fig.show()
+        return
     # Save the figure
     output_path = os.path.join(results_dir, "experiment_metrics_comparison.html")
     fig.write_html(output_path)
