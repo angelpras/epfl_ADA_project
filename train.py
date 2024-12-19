@@ -3,6 +3,7 @@ import sys
 import os
 import pickle
 import argparse
+import random
 from tqdm import tqdm
 
 sys.path.append(os.path.abspath(os.path.join(os.getcwd(), 'src')))
@@ -236,9 +237,9 @@ def model_infer(model, test_loader, index_to_node, device, threshold = 0.5):
 # Example usage
 def main():
     torch.manual_seed(42)
+    random.seed(42)
 
     device = torch.device('mps' if torch.backends.mps.is_available() else 'cuda' if torch.cuda.is_available() else 'cpu')
-    args = parse_args()
     data_path = os.path.abspath(os.path.join(os.getcwd(), 'data'))
     df_links = preprocessing_links(data_path)
 
@@ -299,20 +300,20 @@ def main():
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=1e-5)
 
     # Train the model
-    # print("Starting training")
-    # model = train_gcn(
-    #     model, 
-    #     train_loader, 
-    #     val_loader, 
-    #     criterion, 
-    #     optimizer, 
-    #     device
-    # ) 
+    print("Starting training")
+    model = train_gcn(
+        model, 
+        train_loader, 
+        val_loader, 
+        criterion, 
+        optimizer, 
+        device
+    ) 
 
-    # # Evaluate on test set
-    # print("evaluating on test set")
-    # metrics = evaluate_model(model, test_loader, device, threshold=0.5)
-    # print("Test Metrics:", metrics)
+    # Evaluate on test set
+    print("evaluating on test set")
+    metrics = evaluate_model(model, test_loader, device, threshold=0.5)
+    print("Test Metrics:", metrics)
 
     _, index_to_node = node2index_maps(embedded_articles)
     print("Evaluating on the candidates set")
