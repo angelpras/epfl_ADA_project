@@ -166,3 +166,59 @@ def stats_unfinished(df_played, df_unplayed):
     print("Median Game duration:", df_played['duration'].median(), "seconds")
     print("Maximum pages visited:", df_played['num_pages_visited'].idxmax())
     print("Duration of longest game:", df_played['duration'].idxmax(), "seconds") 
+
+
+###verified Works
+
+def shorten_paths_using_links(df_finished_cut, df_links):
+    # Function to shorten a path based on the source and target link
+    def shorten_path(path, links):
+        for _, link in links.iterrows():
+            # Use 'Source' and 'Target' column names
+            source = link['Source']
+            target = link['Target']
+            
+            if source in path and target in path:
+                # Find indices of source and target
+                source_idx = path.index(source)
+                target_idx = path.index(target)
+                
+                # Ensure source appears before target in the path
+                if source_idx < target_idx:
+                    # Shorten the path: keep everything before source and after target
+                    path = path[:source_idx + 1] + path[target_idx:]
+        return path
+
+    # Iterate over each row in df_finished_cut and modify the 'path_list' column
+    df_finished_cut['path_list'] = df_finished_cut['path_list'].apply(
+        lambda path: shorten_path(path, df_links)
+    )
+    
+    return df_finished_cut
+
+
+###Verified, works
+
+def recalculate_num_pages_visited(df):
+    """
+    Recalculates the 'num_pages_visited' column by counting the number of elements in the 'path_list' column.
+    
+    Parameters:
+        df (pd.DataFrame): DataFrame containing the 'path_list' and 'num_pages_visited' columns.
+        
+    Returns:
+        pd.DataFrame: Updated DataFrame with recalculated 'num_pages_visited'.
+    """
+    # Ensure path_list exists and contains lists
+    if "path_list" in df.columns:
+        # Recalculate num_pages_visited
+        df["num_pages_visited"] = df["path_list"].apply(len)
+    else:
+        raise KeyError("The column 'path_list' is not found in the DataFrame.")
+    
+    return df
+
+
+
+
+
