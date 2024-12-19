@@ -1,0 +1,52 @@
+Creating Graph
+Number of zero-label non-links: 120000
+Number of zero-label non-links after filtering: 120000
+Making data loaders
+Initializing model
+Starting training
+Epoch 1: Train Loss = 0.5305, Val Loss = 0.4575
+Epoch 2: Train Loss = 0.4785, Val Loss = 0.4303
+Epoch 3: Train Loss = 0.4612, Val Loss = 0.4139
+Epoch 4: Train Loss = 0.4551, Val Loss = 0.4223
+Epoch 5: Train Loss = 0.4469, Val Loss = 0.3954
+Epoch 6: Train Loss = 0.4403, Val Loss = 0.4034
+Epoch 7: Train Loss = 0.4365, Val Loss = 0.3992
+Epoch 8: Train Loss = 0.4320, Val Loss = 0.3887
+Epoch 9: Train Loss = 0.4296, Val Loss = 0.3923
+Epoch 10: Train Loss = 0.4251, Val Loss = 0.3867
+Epoch 11: Train Loss = 0.4221, Val Loss = 0.3890
+Epoch 12: Train Loss = 0.4221, Val Loss = 0.3845
+Epoch 13: Train Loss = 0.4189, Val Loss = 0.3863
+Epoch 14: Train Loss = 0.4155, Val Loss = 0.3783
+Epoch 15: Train Loss = 0.4137, Val Loss = 0.3814
+Epoch 16: Train Loss = 0.4134, Val Loss = 0.3801
+Epoch 17: Train Loss = 0.4122, Val Loss = 0.3751
+Epoch 18: Train Loss = 0.4111, Val Loss = 0.3835
+Epoch 19: Train Loss = 0.4083, Val Loss = 0.3705
+Epoch 20: Train Loss = 0.4078, Val Loss = 0.3706
+evaluating on test set
+First 40 predictions
+tensor([1., 1., 0., 1., 1., 0., 0., 0., 1., 1., 0., 1., 1., 0., 1., 0., 0., 0.,
+        1., 1., 0., 0., 1., 1., 1., 0., 1., 0., 1., 0., 1., 1., 1., 1., 0., 1.,
+        0., 0., 0., 0.], device='cuda:0')
+First 40 labels
+tensor([1., 1., 0., 1., 1., 0., 1., 0., 1., 1., 0., 1., 0., 0., 0., 1., 0., 0.,
+        0., 0., 1., 1., 1., 0., 1., 0., 1., 0., 1., 0., 1., 1., 1., 0., 0., 1.,
+        1., 0., 0., 0.], device='cuda:0')
+Test Metrics: {'accuracy': 0.8404524326324463, 'precision': 0.8443127274513245, 'recall': 0.8337234854698181, 'f1': 0.8389846682548523}
+Evaluating on the candidates set
+Percentage of links: 0.56%
+Percentage of non-links: 99.44%
+
+Detailed Link Information:
+Link between Mongolia and Islam
+Link between Brussels and Portugal
+Link between Botswana and Netherlands
+Link between Monarchy and Egypt
+Link between Bosnia_and_Herzegovina and Asia
+Link between Americium and Hydrogen
+Link between Nazi_Germany and England
+Link between Kenya and Iceland
+Link between Florida and California
+Link between Poland and Canada
+Link between Burkina_Faso and Gabon

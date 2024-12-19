@@ -35,6 +35,7 @@ def parse_args():
         '--features_to_drop',
         nargs='+',  # Allows specifying multiple features as a list
         choices=node_features + edge_features,  # Restrict valid inputs to defined features
+        default=[],  # Default to no features removed
         help=(
             "Specify features to remove for ablation study. "
             "Node features: {node}. "
@@ -45,7 +46,7 @@ def parse_args():
             )
         )
     )
-
+    parser.add_argument('--save_dir', type=str, default='./', help='Directory to save the model')
     return parser.parse_args()
 
 def train_gcn(model, train_loader, val_loader, criterion, optimizer, 
@@ -169,7 +170,7 @@ def evaluate_model(model, test_loader, device, threshold = 0.5):
         'f1': f1.item()
     }
 
-def model_infer(model, test_loader, index_to_node, device, threshold = 0.95):
+def model_infer(model, test_loader, index_to_node, device, threshold = 0.5):
     """
     Evaluate the trained model on test data
     
@@ -190,6 +191,8 @@ def model_infer(model, test_loader, index_to_node, device, threshold = 0.95):
             batch = batch.to(device)
             outputs = model(batch)
             preds = (outputs > threshold).float()
+            if preds.dim() == 0:
+                preds = preds.unsqueeze(0)
             all_preds.append(preds)
             
             # Find where predictions are links (1.0)
@@ -256,7 +259,16 @@ def main():
         G=create_graph(embedded_articles, df_links)
         unconnected_pairs = create_subset_unconnected_nodes(G)
         similarities = create_node_similarity_distributions(G, unconnected_pairs)
-        candidates, zero_label_non_links = calculate_negative_likelihood_and_labels(G, similarities)
+        jaccard_scores = calculate_jaccards_coeff(G, unconnected_pairs, plot=False)
+
+        # Create the zero-label non-links from article title and description similarities
+        zero_label_non_links = create_zero_label_non_links(similarities)
+        print(f"Number of zero-label non-links: {len(zero_label_non_links)}")
+        # Use jacard scores to filter out non-links that are too similar.
+        zero_label_non_links = calculate_labels_jaccard(jaccard_scores, zero_label_non_links)
+        print(f"Number of zero-label non-links after filtering: {len(zero_label_non_links)}")
+        
+        candidates = calculate_labels_cos_similarity(G, similarities)
 
         data_loader = GraphDataLoader(G, candidates, zero_label_non_links, args.features_to_drop)
         dataset, candidates_dataset = data_loader.create_pyg_dataset()
@@ -285,7 +297,7 @@ def main():
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=1e-5)
 
     # Train the model
-    print("Starting training")
+    # print("Starting training")
     # model = train_gcn(
     #     model, 
     #     train_loader, 
@@ -302,7 +314,7 @@ def main():
 
     _, index_to_node = node2index_maps(embedded_articles)
     print("Evaluating on the candidates set")
-    preds, linked_nodes = model_infer(model, candidates_loader, index_to_node, device, threshold=0.9)
+    preds, linked_nodes = model_infer(model, candidates_loader, index_to_node, device, threshold=0.5)
     pd.DataFrame(linked_nodes, columns=['Source', 'Target']).to_csv('linked_nodes.csv', index=False)
 
 

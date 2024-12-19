@@ -1,0 +1,52 @@
+Creating Graph
+Number of zero-label non-links: 120000
+Number of zero-label non-links after filtering: 120000
+Making data loaders
+Initializing model
+Starting training
+Epoch 1: Train Loss = 0.5122, Val Loss = 0.4213
+Epoch 2: Train Loss = 0.4480, Val Loss = 0.3833
+Epoch 3: Train Loss = 0.4267, Val Loss = 0.3784
+Epoch 4: Train Loss = 0.4188, Val Loss = 0.3721
+Epoch 5: Train Loss = 0.4105, Val Loss = 0.3530
+Epoch 6: Train Loss = 0.4029, Val Loss = 0.3566
+Epoch 7: Train Loss = 0.3963, Val Loss = 0.3533
+Epoch 8: Train Loss = 0.3934, Val Loss = 0.3403
+Epoch 9: Train Loss = 0.3894, Val Loss = 0.3373
+Epoch 10: Train Loss = 0.3852, Val Loss = 0.3444
+Epoch 11: Train Loss = 0.3837, Val Loss = 0.3360
+Epoch 12: Train Loss = 0.3816, Val Loss = 0.3351
+Epoch 13: Train Loss = 0.3786, Val Loss = 0.3396
+Epoch 14: Train Loss = 0.3760, Val Loss = 0.3351
+Epoch 15: Train Loss = 0.3729, Val Loss = 0.3353
+Epoch 16: Train Loss = 0.3719, Val Loss = 0.3296
+Epoch 17: Train Loss = 0.3705, Val Loss = 0.3304
+Epoch 18: Train Loss = 0.3683, Val Loss = 0.3386
+Epoch 19: Train Loss = 0.3690, Val Loss = 0.3309
+Epoch 20: Train Loss = 0.3671, Val Loss = 0.3242
+evaluating on test set
+First 40 predictions
+tensor([1., 1., 0., 1., 1., 0., 1., 0., 1., 1., 0., 1., 1., 0., 1., 0., 0., 0.,
+        0., 1., 0., 0., 1., 0., 1., 0., 1., 0., 0., 0., 0., 1., 1., 0., 0., 1.,
+        1., 0., 0., 0.], device='cuda:0')
+First 40 labels
+tensor([1., 1., 0., 1., 1., 0., 1., 0., 1., 1., 0., 1., 0., 0., 0., 1., 0., 0.,
+        0., 0., 1., 1., 1., 0., 1., 0., 1., 0., 1., 0., 1., 1., 1., 0., 0., 1.,
+        1., 0., 0., 0.], device='cuda:0')
+Test Metrics: {'accuracy': 0.8634355664253235, 'precision': 0.8663929104804993, 'recall': 0.8584726452827454, 'f1': 0.8624145984649658}
+Evaluating on the candidates set
+Percentage of links: 1.22%
+Percentage of non-links: 98.78%
+
+Detailed Link Information:
+Link between Ukraine and Moscow
+Link between Luxembourg_(city) and Berlin
+Link between Nazi_Germany and England
+Link between Poland and Canada
+Link between Salt and Lead
+Link between Bosnia_and_Herzegovina and Asia
+Link between Tripoli and Poland
+Link between Neon and Electricity
+Link between Dominican_Republic and Vietnam
+Link between Coronation_Street and London
+Link between Equatorial_Guinea and Uruguay

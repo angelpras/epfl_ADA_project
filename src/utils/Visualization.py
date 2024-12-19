@@ -335,7 +335,7 @@ def calculate_common_neighbors(G, unconnected_pairs, subset_size=350):
     plt.tight_layout()
     plt.show()
 
-def calculate_jaccards_coeff(G, unconnected_pairs):
+def calculate_jaccards_coeff(G, unconnected_pairs, plot=True):
     ############ Connected Nodes ############
     G_undirected = G.to_undirected()
     jaccard_connected_vals = nx.jaccard_coefficient(G_undirected)
@@ -345,41 +345,42 @@ def calculate_jaccards_coeff(G, unconnected_pairs):
     jaccard_unconnected_vals = nx.jaccard_coefficient(G_undirected, ebunch=unconnected_pairs)
     jaccard_unconnected_scores = [{'source': u, 'target': v, 'score': j} for u, v, j in jaccard_unconnected_vals]
 
-    ############ Plotting Jaccard's Coefficient Frequency and Values per Node Pairs ############
-    connected_scores_only = [entry['score'] for entry in jaccard_connected_scores]
-    unconnected_scores_only = [entry['score'] for entry in jaccard_unconnected_scores]
-    
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6)) 
-    fig.suptitle('Jaccard\'s Coefficient for Connected Pairs', fontsize=16)
-    ax1.hist(connected_scores_only, bins=50, color='skyblue', edgecolor='black')
-    ax1.set_title('Distribution of Jaccard\'s Coefficient for Node Pairs | Connected Pairs')
-    ax1.set_xlabel('Jaccard\'s Coefficient')
-    ax1.set_ylabel('Frequency')
-    ax1.set_yscale('log')
-    ax1.set_ylim(1e0,1e7)
-    ax1.set_xlim(0,np.max(connected_scores_only))
-    ax2.scatter(range(len(connected_scores_only)), connected_scores_only, color='blue', alpha=0.5)
-    ax2.set_title('Jaccard\'s Coefficient for Node Pairs | Connected Pairs')
-    ax2.set_xlabel('Node Pair Index')
-    ax2.set_ylabel('Jaccard\'s Coefficient')
-    plt.tight_layout()
-    plt.show()
+    if plot:
+        ############ Plotting Jaccard's Coefficient Frequency and Values per Node Pairs ############
+        connected_scores_only = [entry['score'] for entry in jaccard_connected_scores]
+        unconnected_scores_only = [entry['score'] for entry in jaccard_unconnected_scores]
+        
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6)) 
+        fig.suptitle('Jaccard\'s Coefficient for Connected Pairs', fontsize=16)
+        ax1.hist(connected_scores_only, bins=50, color='skyblue', edgecolor='black')
+        ax1.set_title('Distribution of Jaccard\'s Coefficient for Node Pairs | Connected Pairs')
+        ax1.set_xlabel('Jaccard\'s Coefficient')
+        ax1.set_ylabel('Frequency')
+        ax1.set_yscale('log')
+        ax1.set_ylim(1e0,1e7)
+        ax1.set_xlim(0,np.max(connected_scores_only))
+        ax2.scatter(range(len(connected_scores_only)), connected_scores_only, color='blue', alpha=0.5)
+        ax2.set_title('Jaccard\'s Coefficient for Node Pairs | Connected Pairs')
+        ax2.set_xlabel('Node Pair Index')
+        ax2.set_ylabel('Jaccard\'s Coefficient')
+        plt.tight_layout()
+        plt.show()
 
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6)) 
-    fig.suptitle('Jaccard\'s Coefficient for Unconnected Pairs', fontsize=16)
-    ax1.hist(unconnected_scores_only, bins=50, color='skyblue', edgecolor='black')
-    ax1.set_title('Distribution of Jaccard\'s Coefficient | Graph Subset | Unconnected Pairs')
-    ax1.set_xlabel('Jaccard\'s Coefficient')
-    ax1.set_ylabel('Frequency')
-    ax1.set_yscale('log')
-    ax1.set_ylim(1e0,1e7)
-    ax1.set_xlim(0,np.max(unconnected_scores_only))
-    ax2.scatter(range(len(unconnected_scores_only)), unconnected_scores_only, color='blue', alpha=0.5)
-    ax2.set_title('Jaccard\'s Coefficient for Node Pairs | Graph Subset | Unconnected Pairs')
-    ax2.set_xlabel('Node Pair Index')
-    ax2.set_ylabel('Jaccard\'s Coefficient')
-    plt.tight_layout()
-    plt.show()
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6)) 
+        fig.suptitle('Jaccard\'s Coefficient for Unconnected Pairs', fontsize=16)
+        ax1.hist(unconnected_scores_only, bins=50, color='skyblue', edgecolor='black')
+        ax1.set_title('Distribution of Jaccard\'s Coefficient | Graph Subset | Unconnected Pairs')
+        ax1.set_xlabel('Jaccard\'s Coefficient')
+        ax1.set_ylabel('Frequency')
+        ax1.set_yscale('log')
+        ax1.set_ylim(1e0,1e7)
+        ax1.set_xlim(0,np.max(unconnected_scores_only))
+        ax2.scatter(range(len(unconnected_scores_only)), unconnected_scores_only, color='blue', alpha=0.5)
+        ax2.set_title('Jaccard\'s Coefficient for Node Pairs | Graph Subset | Unconnected Pairs')
+        ax2.set_xlabel('Node Pair Index')
+        ax2.set_ylabel('Jaccard\'s Coefficient')
+        plt.tight_layout()
+        plt.show()
 
     return {
         'jaccard_connected_scores': jaccard_connected_scores,

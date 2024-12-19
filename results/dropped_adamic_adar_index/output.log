@@ -1,0 +1,52 @@
+Creating Graph
+Number of zero-label non-links: 120000
+Number of zero-label non-links after filtering: 120000
+Making data loaders
+Initializing model
+Starting training
+Epoch 1: Train Loss = 0.5045, Val Loss = 0.4158
+Epoch 2: Train Loss = 0.4407, Val Loss = 0.3742
+Epoch 3: Train Loss = 0.4191, Val Loss = 0.3647
+Epoch 4: Train Loss = 0.4102, Val Loss = 0.3612
+Epoch 5: Train Loss = 0.4027, Val Loss = 0.3497
+Epoch 6: Train Loss = 0.3964, Val Loss = 0.3494
+Epoch 7: Train Loss = 0.3905, Val Loss = 0.3499
+Epoch 8: Train Loss = 0.3876, Val Loss = 0.3412
+Epoch 9: Train Loss = 0.3841, Val Loss = 0.3364
+Epoch 10: Train Loss = 0.3814, Val Loss = 0.3404
+Epoch 11: Train Loss = 0.3769, Val Loss = 0.3388
+Epoch 12: Train Loss = 0.3745, Val Loss = 0.3360
+Epoch 13: Train Loss = 0.3734, Val Loss = 0.3372
+Epoch 14: Train Loss = 0.3705, Val Loss = 0.3322
+Epoch 15: Train Loss = 0.3682, Val Loss = 0.3312
+Epoch 16: Train Loss = 0.3702, Val Loss = 0.3283
+Epoch 17: Train Loss = 0.3661, Val Loss = 0.3213
+Epoch 18: Train Loss = 0.3642, Val Loss = 0.3357
+Epoch 19: Train Loss = 0.3623, Val Loss = 0.3362
+Epoch 20: Train Loss = 0.3607, Val Loss = 0.3238
+evaluating on test set
+First 40 predictions
+tensor([1., 1., 0., 1., 1., 0., 1., 0., 1., 1., 0., 1., 1., 0., 1., 0., 0., 1.,
+        0., 1., 0., 1., 1., 1., 1., 0., 1., 0., 0., 0., 1., 1., 1., 0., 0., 1.,
+        1., 0., 0., 0.], device='cuda:0')
+First 40 labels
+tensor([1., 1., 0., 1., 1., 0., 1., 0., 1., 1., 0., 1., 0., 0., 0., 1., 0., 0.,
+        0., 0., 1., 1., 1., 0., 1., 0., 1., 0., 1., 0., 1., 1., 1., 0., 0., 1.,
+        1., 0., 0., 0.], device='cuda:0')
+Test Metrics: {'accuracy': 0.861240029335022, 'precision': 0.8449406027793884, 'recall': 0.8838907480239868, 'f1': 0.8639769554138184}
+Evaluating on the candidates set
+Percentage of links: 1.11%
+Percentage of non-links: 98.89%
+
+Detailed Link Information:
+Link between Americium and Hydrogen
+Link between Arctic and India
+Link between Pitcairn_Islands and France
+Link between Lithium and Nitrogen
+Link between William_II_of_England and British_Isles
+Link between Brussels and Portugal
+Link between Commonwealth_Games and Tourism
+Link between Rugby_football and United_States
+Link between Equatorial_Guinea and North_America
+Link between Palau and Israel
+Link between Linguistics and Latin

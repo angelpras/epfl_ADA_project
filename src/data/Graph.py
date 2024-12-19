@@ -162,7 +162,7 @@ def Node2Vec_func(G):
     
     return cosine_sim_matrix, df_embeddings
 
-def calculate_labels_cos_similarity(G,similarities, non_link_threshold=0.4):
+def calculate_labels_cos_similarity(G,similarities):
     """
     Assigns labels to node pairs based on fixed thresholds for cosine similarity.
 
@@ -180,7 +180,6 @@ def calculate_labels_cos_similarity(G,similarities, non_link_threshold=0.4):
     unconnected_similarities = similarities['unconnected_pairs']
 
     # Initialize sets for non-links and candidates
-    zero_label_non_links = set()
     candidates = set()
 
     # Calculate average similarity for connected pairs (threshold for candidates)
@@ -200,15 +199,12 @@ def calculate_labels_cos_similarity(G,similarities, non_link_threshold=0.4):
         description_similarity = pair['description_similarity']
         average_similarity = 0.5 * title_similarity + 0.5 * description_similarity
 
-        # Classify pairs based on thresholds
-        if average_similarity <= non_link_threshold:
-            zero_label_non_links.add((source, target))
-        elif average_similarity >= min_threshold_candidates:
+        if average_similarity >= min_threshold_candidates:
             candidates.add((source, target))
 
-    return candidates, zero_label_non_links
+    return candidates
 
-def calculate_labels_jaccard(jaccard_scores, non_link_threshold=0.001):
+def calculate_labels_jaccard(jaccard_scores, zero_label_non_links):
     """
     Assigns labels to node pairs based on Jaccard coefficients using fixed thresholds.
 
@@ -223,27 +219,50 @@ def calculate_labels_jaccard(jaccard_scores, non_link_threshold=0.001):
             - zero_label_non_links: Set of node pairs labeled as non-links (label=0).
     """
     # Extract Jaccard scores
-    jaccard_connected_scores = [entry['score'] for entry in jaccard_scores['jaccard_connected_scores']]
-    jaccard_unconnected_scores = jaccard_scores['jaccard_unconnected_scores']
+    jaccard_unconnected_scores = [entry['score'] for entry in jaccard_scores['jaccard_unconnected_scores']]
 
-    # Calculate the threshold for connected pairs (mean of connected scores)
-    threshold_connected = sum(jaccard_connected_scores) / len(jaccard_connected_scores)
+    maximal_unconnected_score = max(jaccard_unconnected_scores)
+    
+    # Filter zero-label non-links
+    filtered_zero_label_non_links = set(
+        (source, target) for source, target in zero_label_non_links
+        if next(
+            (entry['score'] for entry in jaccard_scores['jaccard_unconnected_scores'] 
+             if entry['source'] == source and entry['target'] == target),
+            0
+        ) <= maximal_unconnected_score
+    )
 
-    zero_label_non_links = set()
-    candidates = set()
+    return filtered_zero_label_non_links
 
-    # Process unconnected pairs
-    for entry in jaccard_unconnected_scores:
-        score = entry['score']
-        source = entry['source']
-        target = entry['target']
+def create_zero_label_non_links(similarities, target_size=120000):
+    """
+    Create a set of zero-label non-links prioritizing cosine similarity.
+    
+    Args:
+    similarities: Dictionary containing similarities for unconnected pairs
+    target_size: Desired number of zero-label non-links
+    non_link_threshold: Threshold for considering a pair as a non-link
+    
+    Returns:
+    Set of zero-label non-links
+    """
+    # Extract unconnected pairs with cosine similarities
+    unconnected_similarities = similarities['unconnected_pairs']
+    
+    # Sort unconnected pairs by similarity (ascending)
+    sorted_unconnected = sorted(
+        unconnected_similarities, 
+        key=lambda x: 0.5 * x['title_similarity'] + 0.5 * x['description_similarity']
+    )
+    
+    # Initialize set for zero-label non-links
+    zero_label_non_links = set(
+        (pair['source'], pair['target']) for pair in sorted_unconnected[:target_size]
+    )
 
-        if score <= non_link_threshold:
-            zero_label_non_links.add((source, target))
-        elif score > non_link_threshold and score >= threshold_connected:
-            candidates.add((source, target))
+    return zero_label_non_links
 
-    return candidates, zero_label_non_links
 
 def node2index_maps(embedded_articles):
     """

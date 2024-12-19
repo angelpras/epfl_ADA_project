@@ -1,0 +1,52 @@
+Creating Graph
+Number of zero-label non-links: 120000
+Number of zero-label non-links after filtering: 120000
+Making data loaders
+Initializing model
+Starting training
+Epoch 1: Train Loss = 0.5145, Val Loss = 0.4225
+Epoch 2: Train Loss = 0.4505, Val Loss = 0.3972
+Epoch 3: Train Loss = 0.4306, Val Loss = 0.3866
+Epoch 4: Train Loss = 0.4230, Val Loss = 0.3730
+Epoch 5: Train Loss = 0.4160, Val Loss = 0.3661
+Epoch 6: Train Loss = 0.4096, Val Loss = 0.3704
+Epoch 7: Train Loss = 0.4043, Val Loss = 0.3584
+Epoch 8: Train Loss = 0.4018, Val Loss = 0.3498
+Epoch 9: Train Loss = 0.3991, Val Loss = 0.3540
+Epoch 10: Train Loss = 0.3944, Val Loss = 0.3492
+Epoch 11: Train Loss = 0.3923, Val Loss = 0.3488
+Epoch 12: Train Loss = 0.3911, Val Loss = 0.3483
+Epoch 13: Train Loss = 0.3887, Val Loss = 0.3543
+Epoch 14: Train Loss = 0.3885, Val Loss = 0.3430
+Epoch 15: Train Loss = 0.3853, Val Loss = 0.3405
+Epoch 16: Train Loss = 0.3844, Val Loss = 0.3378
+Epoch 17: Train Loss = 0.3817, Val Loss = 0.3429
+Epoch 18: Train Loss = 0.3799, Val Loss = 0.3424
+Epoch 19: Train Loss = 0.3794, Val Loss = 0.3441
+Epoch 20: Train Loss = 0.3788, Val Loss = 0.3332
+evaluating on test set
+First 40 predictions
+tensor([1., 1., 0., 1., 1., 0., 1., 0., 1., 1., 0., 1., 1., 0., 1., 1., 1., 1.,
+        0., 1., 0., 0., 1., 0., 1., 0., 1., 0., 1., 0., 1., 1., 1., 0., 0., 1.,
+        1., 0., 0., 0.], device='cuda:0')
+First 40 labels
+tensor([1., 1., 0., 1., 1., 0., 1., 0., 1., 1., 0., 1., 0., 0., 0., 1., 0., 0.,
+        0., 0., 1., 1., 1., 0., 1., 0., 1., 0., 1., 0., 1., 1., 1., 0., 0., 1.,
+        1., 0., 0., 0.], device='cuda:0')
+Test Metrics: {'accuracy': 0.863685667514801, 'precision': 0.8641672134399414, 'recall': 0.862095832824707, 'f1': 0.8631302714347839}
+Evaluating on the candidates set
+Percentage of links: 0.79%
+Percentage of non-links: 99.21%
+
+Detailed Link Information:
+Link between Americium and Hydrogen
+Link between Iran and Poland
+Link between Uruguay and Africa
+Link between Hydrogen and Calcium
+Link between Atlanta,_Georgia and India
+Link between Neodymium and Petroleum
+Link between Nicaragua and Puerto_Rico
+Link between Oceania and Thailand
+Link between Global_city and Russia
+Link between Mongolia and Islam
+Link between Volga_River and United_Kingdom

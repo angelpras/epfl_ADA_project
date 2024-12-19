@@ -1,0 +1,52 @@
+Creating Graph
+Number of zero-label non-links: 120000
+Number of zero-label non-links after filtering: 120000
+Making data loaders
+Initializing model
+Starting training
+Epoch 1: Train Loss = 0.5023, Val Loss = 0.4074
+Epoch 2: Train Loss = 0.4376, Val Loss = 0.3835
+Epoch 3: Train Loss = 0.4192, Val Loss = 0.3597
+Epoch 4: Train Loss = 0.4098, Val Loss = 0.3707
+Epoch 5: Train Loss = 0.4025, Val Loss = 0.3498
+Epoch 6: Train Loss = 0.3967, Val Loss = 0.3568
+Epoch 7: Train Loss = 0.3909, Val Loss = 0.3437
+Epoch 8: Train Loss = 0.3869, Val Loss = 0.3407
+Epoch 9: Train Loss = 0.3830, Val Loss = 0.3426
+Epoch 10: Train Loss = 0.3815, Val Loss = 0.3439
+Epoch 11: Train Loss = 0.3781, Val Loss = 0.3395
+Epoch 12: Train Loss = 0.3760, Val Loss = 0.3309
+Epoch 13: Train Loss = 0.3743, Val Loss = 0.3487
+Epoch 14: Train Loss = 0.3704, Val Loss = 0.3280
+Epoch 15: Train Loss = 0.3691, Val Loss = 0.3250
+Epoch 16: Train Loss = 0.3698, Val Loss = 0.3278
+Epoch 17: Train Loss = 0.3666, Val Loss = 0.3321
+Epoch 18: Train Loss = 0.3643, Val Loss = 0.3353
+Epoch 19: Train Loss = 0.3633, Val Loss = 0.3263
+Epoch 20: Train Loss = 0.3607, Val Loss = 0.3193
+evaluating on test set
+First 40 predictions
+tensor([1., 1., 0., 1., 1., 0., 1., 0., 1., 1., 0., 1., 1., 0., 1., 0., 1., 0.,
+        0., 1., 0., 1., 1., 1., 1., 0., 1., 0., 1., 0., 1., 1., 1., 0., 0., 1.,
+        1., 0., 0., 0.], device='cuda:0')
+First 40 labels
+tensor([1., 1., 0., 1., 1., 0., 1., 0., 1., 1., 0., 1., 0., 0., 0., 1., 0., 0.,
+        0., 0., 1., 1., 1., 0., 1., 0., 1., 0., 1., 0., 1., 1., 1., 0., 0., 1.,
+        1., 0., 0., 0.], device='cuda:0')
+Test Metrics: {'accuracy': 0.8628241419792175, 'precision': 0.8477749228477478, 'recall': 0.8835005164146423, 'f1': 0.865269124507904}
+Evaluating on the candidates set
+Percentage of links: 1.75%
+Percentage of non-links: 98.25%
+
+Detailed Link Information:
+Link between Monarchy and Egypt
+Link between Volga_River and United_Kingdom
+Link between Neon and Potassium
+Link between Orkney and North_America
+Link between Burundi and Ireland
+Link between Fiji and Jamaica
+Link between Moscow and Indonesia
+Link between Brunei and Country
+Link between Amsterdam and Belgium
+Link between Barbados and Papua_New_Guinea
+Link between China and War
