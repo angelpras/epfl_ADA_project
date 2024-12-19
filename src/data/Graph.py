@@ -103,164 +103,108 @@ def analyze_graph_statistics(G):
     print(f"Clustering coefficient: {clustering_coeff:.4f}")
     print(f"Average Shortest path: {avg_path_length:.4f}")
 
-
-def weisfeiler_lehman_step(graph, labels):
-    """Perform one WL iteration on the graph and return updated labels."""
-    new_labels = {}
-    for node in graph.nodes():
-        # Create a multi-set label combining the node's current label and its neighbors' labels
-        neighborhood = [labels[neighbor] for neighbor in graph.neighbors(node)]
-        neighborhood.sort()
-        new_labels[node] = hash((labels[node], tuple(neighborhood)))
-    return new_labels
-
-
-def Node2Vec_func(G):
+def calculate_labels_cos_similarity(G, similarities):
     """
-    Generates node embeddings by simulating biased random walks through a graph
-    """
-    #The parameters below would be tuned, especially p and q to balance the DFS and BFS behavior
-    node2vec = Node2Vec(G, dimensions=128, walk_length=80, num_walks=10, p=1, q=1, workers=4)
-
-    # Learn the embeddings for the nodes in the graph
-    model = node2vec.fit()
-
-    # Get the node embeddings (for each node)
-    embeddings = model.wv
-
-    # Extract node embeddings and store them in a DataFrame
-    node_embeddings = []
-
-    for node in G.nodes():
-        try:
-            # Retrieve the embedding for the node
-            embedding = embeddings[node]
-            node_embeddings.append({"Article": node, "Embedding": embedding})
-        except KeyError:
-            # Handle case where node embedding might be missing
-            node_embeddings.append({"Article": node, "Embedding": None})
-
-    # Convert to DataFrame
-    df_embeddings = pd.DataFrame(node_embeddings)
+    Identifies candidate node pairs for link prediction based on cosine similarity thresholds.
     
-    # Handle missing embeddings if any
-    df_embeddings = df_embeddings.dropna(subset=["Embedding"])
-
-    # Flatten the embeddings into individual columns in one step
-    embedding_matrix = pd.DataFrame(
-        df_embeddings["Embedding"].to_list(),
-        columns=[f"embedding_{i}" for i in range(128)],
-        index=df_embeddings.index
-    )
-    
-    # Concatenate with the original DataFrame and drop the "Embedding" column
-    df_embeddings = pd.concat([df_embeddings.drop(columns=["Embedding"]), embedding_matrix], axis=1)
-    
-    # Compute the cosine similarity between all pairs of nodes
-    embedding_matrix_values = df_embeddings[[f"embedding_{i}" for i in range(128)]].values
-    cosine_sim_matrix = cosine_similarity(embedding_matrix_values)
-    
-    return cosine_sim_matrix, df_embeddings
-
-def calculate_labels_cos_similarity(G,similarities):
-    """
-    Assigns labels to node pairs based on fixed thresholds for cosine similarity.
-
     Args:
-        G: The graph object.
-        similarities: Dictionary containing connected and unconnected pairs with cosine similarities.
-        max_threshold_non_links: Maximum similarity threshold to classify pairs as non-links (label 0).
-
+        G: The graph object containing connected nodes with title and description similarity weights.
+        similarities: Dictionary containing unconnected pairs with their cosine similarities.
+    
     Returns:
-        tuple:
-            - candidates: Set of node pairs considered as candidates for link prediction.
-            - zero_label_non_links: Set of node pairs labeled as non-links (label=0).
+        candidates: Set of unconnected node pairs whose average similarity equals or exceeds
+                   the mean similarity of existing connected pairs. These pairs are considered
+                   candidates for link prediction.
     """
     # Extract unconnected pairs with cosine similarities
     unconnected_similarities = similarities['unconnected_pairs']
-
-    # Initialize sets for non-links and candidates
+    
+    # Initialize set for candidate pairs
     candidates = set()
-
-    # Calculate average similarity for connected pairs (threshold for candidates)
+    
+    # Calculate average similarity across all connected pairs to use as threshold
     connected_scores = []
     for u, v, data_edge in G.edges(data=True):
         title_similarity = data_edge['weight_title']
         description_similarity = data_edge['weight_description']
         average_similarity = 0.5 * title_similarity + 0.5 * description_similarity
         connected_scores.append(average_similarity)
-
     min_threshold_candidates = sum(connected_scores) / len(connected_scores)
-
-    # Process unconnected pairs
+    
+    # Identify unconnected pairs that exceed the threshold as candidates
     for pair in unconnected_similarities:
         source, target = pair['source'], pair['target']
         title_similarity = pair['title_similarity']
         description_similarity = pair['description_similarity']
         average_similarity = 0.5 * title_similarity + 0.5 * description_similarity
-
         if average_similarity >= min_threshold_candidates:
             candidates.add((source, target))
-
+            
     return candidates
 
 def calculate_labels_jaccard(jaccard_scores, zero_label_non_links):
     """
-    Assigns labels to node pairs based on Jaccard coefficients using fixed thresholds.
-
+    Filters a set of non-linked node pairs based on their Jaccard similarity scores.
+    
     Args:
-        G: The graph object.
-        jaccard_scores: Dictionary containing Jaccard's coefficients for connected and unconnected pairs.
-        max_threshold_non_links: Threshold below which unconnected pairs are considered non-links (label=0).
-
+        jaccard_scores: Dictionary containing Jaccard coefficients for unconnected pairs
+                       in the format {'jaccard_unconnected_scores': [{'source': node1, 
+                       'target': node2, 'score': float}]}.
+        zero_label_non_links: Initial set of node pairs labeled as non-links to be filtered.
+    
     Returns:
-        tuple:
-            - candidates: Set of node pairs considered as candidates for link prediction.
-            - zero_label_non_links: Set of node pairs labeled as non-links (label=0).
+        filtered_zero_label_non_links: Subset of the input non-links where each pair's
+                                     Jaccard score is less than or equal to the maximum
+                                     Jaccard score observed across all unconnected pairs.
     """
-    # Extract Jaccard scores
+    # Get list of Jaccard scores for unconnected pairs
     jaccard_unconnected_scores = [entry['score'] for entry in jaccard_scores['jaccard_unconnected_scores']]
-
     maximal_unconnected_score = max(jaccard_unconnected_scores)
     
-    # Filter zero-label non-links
+    # Keep only non-links whose Jaccard score doesn't exceed the maximum observed score
     filtered_zero_label_non_links = set(
         (source, target) for source, target in zero_label_non_links
         if next(
-            (entry['score'] for entry in jaccard_scores['jaccard_unconnected_scores'] 
+            (entry['score'] for entry in jaccard_scores['jaccard_unconnected_scores']
              if entry['source'] == source and entry['target'] == target),
             0
         ) <= maximal_unconnected_score
     )
-
+    
     return filtered_zero_label_non_links
 
 def create_zero_label_non_links(similarities, target_size=120000):
     """
-    Create a set of zero-label non-links prioritizing cosine similarity.
+    Creates a set of node pairs that are least likely to form links, based on their
+    combined title and description cosine similarities.
     
     Args:
-    similarities: Dictionary containing similarities for unconnected pairs
-    target_size: Desired number of zero-label non-links
-    non_link_threshold: Threshold for considering a pair as a non-link
+        similarities: Dictionary containing unconnected pairs with their title and
+                     description similarities in format {'unconnected_pairs': 
+                     [{'source': node1, 'target': node2, 'title_similarity': float,
+                     'description_similarity': float}]}.
+        target_size: Maximum number of pairs to include in the result set. 
+                    Defaults to 120000.
     
     Returns:
-    Set of zero-label non-links
+        zero_label_non_links: Set of (source, target) tuples representing the pairs
+                             with the lowest average cosine similarities, limited to
+                             the specified target size.
     """
-    # Extract unconnected pairs with cosine similarities
+    # Get list of unconnected node pairs
     unconnected_similarities = similarities['unconnected_pairs']
     
-    # Sort unconnected pairs by similarity (ascending)
+    # Sort pairs by average similarity (title and description) in ascending order
     sorted_unconnected = sorted(
-        unconnected_similarities, 
+        unconnected_similarities,
         key=lambda x: 0.5 * x['title_similarity'] + 0.5 * x['description_similarity']
     )
     
-    # Initialize set for zero-label non-links
+    # Take the first target_size pairs (those with lowest similarities)
     zero_label_non_links = set(
         (pair['source'], pair['target']) for pair in sorted_unconnected[:target_size]
     )
-
+    
     return zero_label_non_links
 
 

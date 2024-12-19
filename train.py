@@ -49,8 +49,10 @@ def parse_args():
     parser.add_argument('--save_dir', type=str, default='./', help='Directory to save the model')
     return parser.parse_args()
 
+args = parse_args()
+
 def train_gcn(model, train_loader, val_loader, criterion, optimizer, 
-              device, epochs=2, early_stopping_patience=10):
+              device, epochs=20, early_stopping_patience=10):
     """
     Training function for the GCN model
     
@@ -113,7 +115,7 @@ def train_gcn(model, train_loader, val_loader, criterion, optimizer,
             best_val_loss = avg_val_loss
             patience_counter = 0
             # Save the best model
-            torch.save(model.state_dict(), 'best_gcn_model.pth')
+            torch.save(model.state_dict(), os.path.join(args.save_dir, 'best_gcn_model.pth'))
         else:
             patience_counter += 1
         
@@ -123,7 +125,7 @@ def train_gcn(model, train_loader, val_loader, criterion, optimizer,
             break
     
     # Load best model
-    model.load_state_dict(torch.load('best_gcn_model.pth'))
+    model.load_state_dict(torch.load(os.path.join(args.save_dir, 'best_gcn_model.pth'), weights_only=True))
     return model
 
 def evaluate_model(model, test_loader, device, threshold = 0.5):
@@ -288,9 +290,9 @@ def main():
     print("Initializing model")
     model = EdgeClassificationGCNWrapper().to(device)
 
-    if os.path.exists('best_gcn_model.pth'):
+    if os.path.exists(os.path.join(args.save_dir, 'best_gcn_model.pth')):
         # If model already trained, load it
-        model.load_state_dict(torch.load('best_gcn_model.pth', map_location=device, weights_only=True))
+        model.load_state_dict(torch.load(os.path.join(args.save_dir, 'best_gcn_model.pth'), map_location=device, weights_only=True))
     # else:
     # Loss and optimizer
     criterion = torch.nn.BCELoss()
@@ -314,8 +316,8 @@ def main():
 
     _, index_to_node = node2index_maps(embedded_articles)
     print("Evaluating on the candidates set")
-    preds, linked_nodes = model_infer(model, candidates_loader, index_to_node, device, threshold=0.5)
-    pd.DataFrame(linked_nodes, columns=['Source', 'Target']).to_csv('linked_nodes.csv', index=False)
+    preds, linked_nodes = model_infer(model, candidates_loader, index_to_node, device, threshold=0.9)
+    pd.DataFrame(linked_nodes, columns=['Source', 'Target']).to_csv(os.path.join(args.save_dir, 'linked_nodes.csv'), index=False)
 
 
 if __name__ == '__main__':

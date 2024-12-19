@@ -383,57 +383,9 @@ def calculate_jaccards_coeff(G, unconnected_pairs, plot=True):
         plt.show()
 
     return {
-        'jaccard_connected_scores': jaccard_connected_scores,
-        'jaccard_unconnected_scores': jaccard_unconnected_scores
+        'connected_scores': jaccard_connected_scores,
+        'unconnected_scores': jaccard_unconnected_scores
     }
-
-
-
-
-def calculate_jaccards_conditional_proba(scores):
-
-    # Define similarity bins 
-    bins = np.arange(-0.4, 1.05, 0.05)
-
-    # Extract scores for connected and unconnected nodes
-    connected_jaccards_scores = [entry['score'] for entry in scores['jaccard_connected_scores']]
-    unconnected_jaccards_scores = [entry['score'] for entry in scores['jaccard_unconnected_scores']]
-
-
-    # Calculate histograms (frequencies) for connected and unconnected nodes
-    connected_jaccards_counts, _ = np.histogram(connected_jaccards_scores, bins=bins)
-    unconnected_jaccards_counts, _ = np.histogram(unconnected_jaccards_scores, bins=bins)
-
-    connected_area = np.sum(connected_jaccards_counts)
-    unconnected_area = np.sum(unconnected_jaccards_counts)
-
-    connected_normalized = connected_jaccards_counts / connected_area
-    unconnected_normalized = unconnected_jaccards_counts / unconnected_area
-
-    # Create a DataFrame to store the results
-    df_jaccards = pd.DataFrame({
-        'bin_center': bins[:-1] + 0.025,  # Center of each bin
-        'connected': connected_jaccards_counts,
-        'unconnected': unconnected_jaccards_counts,
-        'connected_normalized': connected_normalized,
-        'unconnected_normalized': unconnected_normalized
-    })
-
-    # Calculate the conditional probability of a link in each bin
-     # Calculate the conditional probability of a link in each bin
-    df_jaccards['total_normalized'] = df_jaccards['connected_normalized'] + df_jaccards['unconnected_normalized']
-    df_jaccards['p(link|similarity)'] = df_jaccards['connected_normalized'] / df_jaccards['total_normalized']
-    
-    # Plot the conditional probability graph versus cosine similarity
-    plt.figure(figsize=(10, 6))
-    plt.bar(df_jaccards['bin_center'], df_jaccards['p(link|similarity)'], width=0.05, color='skyblue', edgecolor='black')
-    plt.xlabel('Jaccards similarity')
-    plt.ylabel('Estimated probability of a link between two random nodes')
-    plt.title('Estimated probability of a link between two random nodes according to jaccards similarity distribution')
-    plt.ylim(0, 1)
-    plt.grid(axis='y', linestyle='--', alpha=0.7)
-    plt.show()
-
 
 def calculate_adamic_adar(G, unconnected_pairs):
     ############ Connected Nodes ############
@@ -485,55 +437,79 @@ def calculate_adamic_adar(G, unconnected_pairs):
     plt.show()
 
     return {
-        'adar_connected_scores': adar_connected_scores,
-        'adar_unconnected_scores': adar_unconnected_scores
+        'connected_scores': adar_connected_scores,
+        'unconnected_scores': adar_unconnected_scores
     }
 
-
-def calculate_adar_conditional_proba(scores):
-
-    # Define similarity bins 
-    bins = np.arange(-0.4, 1.05, 0.05)
-
-    # Extract scores for connected and unconnected nodes
-    connected_adar_scores = [entry['score'] for entry in scores['adar_connected_scores']]
-    unconnected_adar_scores = [entry['score'] for entry in scores['adar_unconnected_scores']]
-
-
-    # Calculate histograms (frequencies) for connected and unconnected nodes
-    connected_adar_counts, _ = np.histogram(connected_adar_scores, bins=bins)
-    unconnected_adar_counts, _ = np.histogram(unconnected_adar_scores, bins=bins)
-
-    connected_area = np.sum(connected_adar_counts)
-    unconnected_area = np.sum(unconnected_adar_counts)
-
-    connected_normalized = connected_adar_counts / connected_area
-    unconnected_normalized = unconnected_adar_counts / unconnected_area
-
-    # Create a DataFrame to store the results
-    df_adar = pd.DataFrame({
-        'bin_center': bins[:-1] + 0.025,  # Center of each bin
-        'connected': connected_adar_counts,
-        'unconnected': unconnected_adar_counts,
+def calculate_conditional_probability(scores, metric_name, bins=None):
+    """
+    Calculates and visualizes the conditional probability of a link existing between nodes
+    based on their similarity scores (Adamic-Adar or Jaccard).
+    
+    Args:
+        scores: Dictionary containing similarity scores for both connected and unconnected pairs
+               in format {'metric_connected_scores': [{'score': float}, ...],
+                         'metric_unconnected_scores': [{'score': float}, ...]}
+        metric_name: String indicating the metric being used ('Adamic-Adar' or 'Jaccard')
+        bins: Optional numpy array of bin edges. If None, will be automatically determined
+              based on the data range
+    
+    Returns:
+        tuple: (DataFrame with probability calculations, Figure object)
+    """
+    import numpy as np
+    import pandas as pd
+    import matplotlib.pyplot as plt
+    
+    connected_scores = np.array([entry['score'] for entry in scores['connected_scores']])
+    unconnected_scores = np.array([entry['score'] for entry in scores['unconnected_scores']])
+    
+    # Determine appropriate bins if not provided
+    if bins is None:
+        min_score = min(np.min(connected_scores), np.min(unconnected_scores))
+        max_score = max(np.max(connected_scores), np.max(unconnected_scores))
+        bins = np.linspace(min_score, max_score, 30)  # 30 bins spanning the data range
+    
+    # Calculate histograms
+    connected_counts, bin_edges = np.histogram(connected_scores, bins=bins)
+    unconnected_counts, _ = np.histogram(unconnected_scores, bins=bins)
+    
+    # Normalize the counts
+    connected_normalized = connected_counts / np.sum(connected_counts)
+    unconnected_normalized = unconnected_counts / np.sum(unconnected_counts)
+    
+    # Create DataFrame
+    df = pd.DataFrame({
+        'bin_center': (bin_edges[1:] + bin_edges[:-1]) / 2,
+        'connected': connected_counts,
+        'unconnected': unconnected_counts,
         'connected_normalized': connected_normalized,
         'unconnected_normalized': unconnected_normalized
     })
-
-    # Calculate the conditional probability of a link in each bin
-     # Calculate the conditional probability of a link in each bin
-    df_adar['total_normalized'] = df_adar['connected_normalized'] + df_adar['unconnected_normalized']
-    df_adar['p(link|similarity)'] = df_adar['connected_normalized'] / df_adar['total_normalized']
     
-    # Plot the conditional probability graph versus cosine similarity
+    # Calculate conditional probability
+    df['total_normalized'] = df['connected_normalized'] + df['unconnected_normalized']
+    df['p(link|similarity)'] = np.where(
+        df['total_normalized'] > 0,
+        df['connected_normalized'] / df['total_normalized'],
+        0
+    )
+    
+    # Create visualization
     plt.figure(figsize=(10, 6))
-    plt.bar(df_adar['bin_center'], df_adar['p(link|similarity)'], width=0.05, color='skyblue', edgecolor='black')
-    plt.xlabel('Adamic-Adar Index')
-    plt.ylabel('Estimated probability of a link between two random nodes')
-    plt.title('Estimated probability of a link between two random nodes according to Adamic-Adar Index distribution')
-    #plt.ylim(0, 1)
+    plt.bar(df['bin_center'], 
+            df['p(link|similarity)'], 
+            width=np.diff(bins)[0] * 0.9,  # slightly smaller than bin width
+            color='skyblue', 
+            edgecolor='black')
+    
+    plt.xlabel(f'{metric_name} Score')
+    plt.ylabel('P(link|similarity)')
+    plt.title(f'Conditional Probability of Link Given {metric_name} Score')
+    plt.ylim(0, 1)
     plt.grid(axis='y', linestyle='--', alpha=0.7)
-    plt.show()
-
+    
+    return df, plt.gcf()
 
 def analyze_graph_statistics(G):
     """
