@@ -60,6 +60,24 @@ def create_graph(embedded_articles, df_links):
 
     return G 
 
+def add_edges_from_csv(G, linked_nodes):
+    """
+    Adds edges to the graph G based on a CSV containing Source and Target articles.
+
+    Args:
+        G: The original graph (nx.DiGraph).
+        linked_nodes: additional edges to add to the graph.        
+    Returns:
+        G: The updated graph with additional edges.
+    """
+    # Iterate through each row in the additional edges
+    for _, row in linked_nodes.iterrows():
+        source = row['Source']
+        target = row['Target']
+        G.add_edge(source, target)
+    
+    return G
+
 def analyze_graph_statistics(G):
     """
     In this function, these graph characteristics are computed and displayed:
