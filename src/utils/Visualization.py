@@ -986,10 +986,7 @@ def visualization_pie_charts(df_links_, df_categories):
         # Show the pie chart
         fig.show("png")
 
-def Visualization_error_bars(df_links_, df_categories):
-    #Load the correct file
-    df_links_with_pred=pd.read_csv(r"results\full_model\linked_nodes_with_predictions.csv",sep=",")
-
+def Visualization_error_bars(df_links_, df_categories, df_links_with_pred):
     # Merge categories for Source and Target nodes (consider all levels)
     df_links_with_pred = df_links_with_pred.merge(
         df_categories[['Article', 'Category_Level_1']],
