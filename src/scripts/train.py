@@ -6,7 +6,9 @@ import argparse
 import random
 from tqdm import tqdm
 
-sys.path.append(os.path.abspath(os.path.join(os.getcwd(), 'src')))
+script_dir = os.path.dirname(os.path.abspath(__file__))
+src_dir = os.path.dirname(script_dir)
+sys.path.append(src_dir)
 
 from models.GCN_model import *
 from data.Graph import *
