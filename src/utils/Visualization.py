@@ -608,7 +608,7 @@ def Visualization_categories_distribution_premodel(df_links_,df_categories):
         height=600,
         width=1000
     )
-    fig.show()
+    fig.show("png")
 
     # Plot Source Category Distribution using Plotly
     fig_source = px.bar(
@@ -634,7 +634,7 @@ def Visualization_categories_distribution_premodel(df_links_,df_categories):
         height=600,
         width=1000
     )
-    fig_source.show()
+    fig_source.show("png")
 
     # Plot Target Category Distribution using Plotly
     fig_target = px.bar(
@@ -660,7 +660,7 @@ def Visualization_categories_distribution_premodel(df_links_,df_categories):
         height=600,
         width=1000
     )
-    fig_target.show()
+    fig_target.show("png")
 
 
 def Visualization_post_model(df_links):
