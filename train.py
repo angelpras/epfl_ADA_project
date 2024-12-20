@@ -129,110 +129,92 @@ def train_gcn(model, train_loader, val_loader, criterion, optimizer,
     model.load_state_dict(torch.load(os.path.join(args.save_dir, 'best_gcn_model.pth'), weights_only=True))
     return model
 
-def evaluate_model(model, test_loader, device, threshold = 0.5):
+def evaluate_model(model, data_loader, device, index_to_node, threshold=0.5, candidate=False):
     """
-    Evaluate the trained model on test data
+    Evaluate the model on data and generate predictions. Calculates metrics if labels are available.
     
     Args:
         model (torch.nn.Module): Trained GCN model
-        test_loader (DataLoader): Test data loader
+        data_loader (DataLoader): Data loader
         device (torch.device): Computing device
+        index_to_node (dict): Mapping from node indices to node names
+        threshold (float): Classification threshold
     
     Returns:
-        dict: Evaluation metrics
+        dict: Evaluation metrics (if labels available) or None
     """
     model.eval()
     all_preds = []
     all_labels = []
-    
-    with torch.no_grad():
-        for batch in tqdm(test_loader, leave=False):
-            batch = batch.to(device)
-            outputs = model(batch)
-            preds = (outputs > threshold).float()
-            
-            all_preds.append(preds)
-            all_labels.append(batch.y)
-    
-    all_preds = torch.cat(all_preds)
-    all_labels = torch.cat(all_labels)
-    print("First 40 predictions")
-    print(all_preds[:40])
-    print("First 40 labels")
-    print(all_labels[:40])
-    # Calculate metrics
-    accuracy = (all_preds == all_labels).float().mean()
-    precision = (all_preds[all_preds == 1] == all_labels[all_preds == 1]).float().mean()
-    recall = (all_preds[all_labels == 1] == all_labels[all_labels == 1]).float().mean()
-    f1 = 2 * precision * recall / (precision + recall)
-    
-    return {
-        'accuracy': accuracy.item(),
-        'precision': precision.item(),
-        'recall': recall.item(),
-        'f1': f1.item()
-    }
-
-def model_infer(model, test_loader, index_to_node, device, threshold = 0.5):
-    """
-    Evaluate the trained model on test data
-    
-    Args:
-        model (torch.nn.Module): Trained GCN model
-        test_loader (DataLoader): Test data loader
-        device (torch.device): Computing device
-    
-    Returns:
-        dict: Evaluation metrics
-    """
-    model.eval()
-    all_preds = []
     link_nodes = []
-
+    
     with torch.no_grad():
-        for batch in tqdm(test_loader, leave=False):
+        for batch in tqdm(data_loader, leave=False):
             batch = batch.to(device)
             outputs = model(batch)
             preds = (outputs > threshold).float()
             if preds.dim() == 0:
                 preds = preds.unsqueeze(0)
+            # Store predictions and labels if available
             all_preds.append(preds)
+            if not candidate:
+                all_labels.append(batch.y)
             
-            # Find where predictions are links (1.0)
-            link_indices = torch.where(preds == 1)[0]
-            
-            # Collect node names for links
-            for idx in link_indices:
+            # Process each prediction in the batch
+            for idx in range(preds.shape[0]):
                 try:
-                    # Safely get the node indices
                     source_idx = batch[idx].edge_index[0].item()
                     target_idx = batch[idx].edge_index[1].item()
                     
-                    # Look up nodes, using a default if not found
                     source_node = index_to_node.get(source_idx, f"Unknown Node {source_idx}")
                     target_node = index_to_node.get(target_idx, f"Unknown Node {target_idx}")
                     
-                    link_nodes.append((source_node, target_node))
+                    if not candidate:
+                        link_nodes.append((source_node, target_node, preds[idx].item(), batch.y[idx].item()))
+                    else:
+                        link_nodes.append((source_node, target_node, preds[idx].item()))
                 except Exception as e:
                     print(f"Error processing link at index {idx}: {e}")
-            
-            all_preds.append(preds)
     
-    all_preds = torch.cat(all_preds)
-    total_preds = len(all_preds)
-    link_percentage = (all_preds.sum() / total_preds) * 100
-    non_link_percentage = 100 - link_percentage
-
-    print(f"Percentage of links: {link_percentage:.2f}%")
-    print(f"Percentage of non-links: {non_link_percentage:.2f}%")
-
-    print("\nDetailed Link Information:")
-    for idx, (source, target) in enumerate(link_nodes):
-        print(f"Link between {source} and {target}")
-        if idx >= 10:
-            break
-   
-    return all_preds, link_nodes
+    # Save results to CSV
+    if link_nodes:
+        columns = ['Source', 'Target', 'Prediction']
+        if not candidate:
+            columns.append('Correct_Label')
+            df_links = pd.DataFrame(link_nodes, columns=columns)
+            df_links.to_csv(os.path.join(args.save_dir, 'linked_nodes_with_predictions.csv'), index=False)
+        if candidate:
+            df_links = pd.DataFrame(link_nodes, columns=columns)
+            df_links = df_links[df_links['Prediction'] == 1]
+            df_links = df_links.drop(columns='Prediction')
+            df_links.to_csv(os.path.join(args.save_dir, 'linked_nodes.csv'), index=False)
+        print("CSV saved successfully.")
+    else:
+        print("No links were processed. CSV is empty.")
+    
+    # Calculate metrics only if labels are available
+    if all_labels:
+        all_preds = torch.cat(all_preds)
+        all_labels = torch.cat(all_labels)
+        
+        print("First 40 predictions")
+        print(all_preds[:40])
+        print("First 40 labels")
+        print(all_labels[:40])
+        
+        accuracy = (all_preds == all_labels).float().mean()
+        precision = (all_preds[all_preds == 1] == all_labels[all_preds == 1]).float().mean()
+        recall = (all_preds[all_labels == 1] == all_labels[all_labels == 1]).float().mean()
+        f1 = 2 * precision * recall / (precision + recall)
+        
+        return {
+            'accuracy': accuracy.item(),
+            'precision': precision.item(),
+            'recall': recall.item(),
+            'f1': f1.item()
+        }
+    
+    return None
 
 # Example usage
 def main():
@@ -250,11 +232,15 @@ def main():
     else:
         print("Couldn't find the embeddings")
 
-    if os.path.exists('graph_dataset.pkl') and os.path.exists('candidates_dataset.pkl'):
-        with open('graph_dataset.pkl', 'rb') as f:
+    save_dir = args.save_dir
+    graph_data_path = os.path.join(save_dir, 'graph_dataset.pkl')
+    candidates_data_path = os.path.join(save_dir, 'candidates_dataset.pkl')
+
+    if os.path.exists(graph_data_path) and os.path.exists(candidates_data_path):
+        with open(graph_data_path, 'rb') as f:
             dataset = pickle.load(f)
 
-        with open('candidates_dataset.pkl', 'rb') as f:
+        with open(candidates_data_path, 'rb') as f:
             candidates_dataset = pickle.load(f)
 
     else:
@@ -275,14 +261,15 @@ def main():
 
         data_loader = GraphDataLoader(G, candidates, zero_label_non_links, args.features_to_drop)
         dataset, candidates_dataset = data_loader.create_pyg_dataset()
-        with open('graph_dataset.pkl', 'wb') as f:
+        with open(graph_data_path, 'wb') as f:
             pickle.dump(dataset, f)
 
-        with open('candidates_dataset.pkl', 'wb') as f:
+        with open(candidates_data_path, 'wb') as f:
             pickle.dump(candidates_dataset, f)
     
 
     dataset = dataset.to(device, non_blocking=True)
+    candidates_dataset = candidates_dataset.to(device, non_blocking=True)
 
     print("Making data loaders")
     train_loader, val_loader, test_loader, candidates_loader = create_graph_dataloaders(dataset, candidates_dataset)
@@ -294,31 +281,30 @@ def main():
     if os.path.exists(os.path.join(args.save_dir, 'best_gcn_model.pth')):
         # If model already trained, load it
         model.load_state_dict(torch.load(os.path.join(args.save_dir, 'best_gcn_model.pth'), map_location=device, weights_only=True))
-    # else:
-    # Loss and optimizer
-    criterion = torch.nn.BCELoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=1e-5)
+    else:
+        # Loss and optimizer
+        criterion = torch.nn.BCELoss()
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=1e-5)
 
-    # Train the model
-    print("Starting training")
-    model = train_gcn(
-        model, 
-        train_loader, 
-        val_loader, 
-        criterion, 
-        optimizer, 
-        device
-    ) 
-
-    # Evaluate on test set
-    print("evaluating on test set")
-    metrics = evaluate_model(model, test_loader, device, threshold=0.5)
-    print("Test Metrics:", metrics)
+        # Train the model
+        print("Starting training")
+        model = train_gcn(
+            model, 
+            train_loader, 
+            val_loader, 
+            criterion, 
+            optimizer, 
+            device
+        ) 
 
     _, index_to_node = node2index_maps(embedded_articles)
+    # Evaluate on test set
+    print("Evaluating on test set")
+    metrics = evaluate_model(model, test_loader, device, index_to_node, threshold=0.9)
+    print("Test Metrics:", metrics)
+
     print("Evaluating on the candidates set")
-    preds, linked_nodes = model_infer(model, candidates_loader, index_to_node, device, threshold=0.9)
-    pd.DataFrame(linked_nodes, columns=['Source', 'Target']).to_csv(os.path.join(args.save_dir, 'linked_nodes.csv'), index=False)
+    evaluate_model(model, candidates_loader, device, index_to_node, threshold=0.9, candidate=True)
 
 
 if __name__ == '__main__':

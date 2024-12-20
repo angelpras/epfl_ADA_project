@@ -1,7 +1,7 @@
 
 # Linkin nodes
 
-This is the project repository of the group collectifmetisser.
+This is the project repository of the group collectifmetisser. To see the data story, go to https://n1naa.github.io
 
 ## Quickstart
 
@@ -51,11 +51,11 @@ Notably, it will aid in the navigation between articles, as users can more easil
 
 ## Research questions
 
-- Can article names and descriptions embeddings be used to infer a link between two articles?
-- What are the most descriptive features/heuristic methods to infer links between two articles?
-- Do additional links provided by a missing link predictor model aid in the human navigation between articles?
-- Can the GNN model effectively handle large-scale Wikipedia article networks, or are there scalability challenges that need to be addressed for real-world use?
-- Are there specific types of articles or categories where link prediction is more or less accurate?
+- Can article names and descriptions embeddings be used to infer a link between two articles? ***Answered in part 7***
+- What are the most descriptive features/heuristic methods to infer links between two articles? ***Answered in part 7***
+- Do additional links provided by a missing link predictor model aid in the human navigation between articles? ***Answered in part 9***
+- Can the GNN model effectively handle large-scale Wikipedia article networks, or are there scalability challenges that need to be addressed for real-world use? ***Answered in part 7***
+- Are there specific types of articles or categories where link prediction is more or less accurate? ***Answered in part 8***
 
 ## Methods
 
@@ -85,7 +85,7 @@ We will begin by using existing links as positive examples, labeled as 1. To ide
    - **Content Similarity**: Connected pairs often exhibit higher content similarity scores.
    - **Common Neighbors**: Connected pairs usually share a greater number of common neighbors.
 
-2. **Negative Likelihood Score Calculation**: Based on the feature distributions, pairs which exhibit higher scores than the average for connected nodes are selected as candidates for link prediction.
+2. **Candidate Likelihood Calculation**: Based on the feature distributions, pairs which exhibit higher scores than the average for connected nodes are selected as candidates for link prediction.
 
 3. **Threshold for Negative Examples**: The most dissimilar pairs, based on feature distributions, are assigned a 0 label as negative samples. A fixed number of these pairs are selected to create a balanced dataset with an equal number of 1 label connections already present.
 
@@ -95,29 +95,16 @@ The model uses a Graph Convolutional Network (GCN) to learn patterns within the 
 
 Other models, like Graph Attention Networks (GATs) and GraphSAGE, were considered. GATs offer attention mechanisms for feature weighting but are computationally expensive, and edge features already provide importance weighting. GraphSAGE, designed for evolving graphs, wasn’t needed for this fixed graph.
 
-## Proposed Timeline
+## Contribution within the team
 
-- **15-22 Nov**: Focus on completing Homework 2.
-- **23-29 Nov**: 
-  - Finish Homework 2.
-  - Start building the dataloaders and defining the model architecture.
-  - Build a test graph by connecting random nodes together.
-- **30 Nov - 6 Dec**: 
-  - Train the model using various configurations and feature sets.
-  - Setup the pipeline to compare graphs together using the human traces.
-- **7-13 Dec**: 
-  - Perform tests on the new graphs created with human navigation traces.
-- **14-20 Dec**: 
-  - Apply final adjustments and complete final touches.
+- Alexis: Building and coding the model architecture. Helping with 0 label non-links and candidates selection. Training the model. Doing the model ablation studies and plots.
+- Antoine: Post-model analysis ideas, algorithms, and plots.
+- Angeline: Distribution analysis pre-model for 0 label non-links and candidates selection. Post model graph statistics analysis.
+- Nina: Coming up with the datastory: ideas, form, text, story, and making a lot of graphs.
+- Alfred: Human path data analysis post-model. Making a lot of graphs for the datastory.
 
-## Organization within the team
+## Results Highlights
 
-- Alexis and Antoine: Build the model architecture, using the concatenated embeddings. Train the model.
-- Angeline and Nina: Build the dataloaders by building the negative likelihood score calculator and set the thresholds for label 0 (non-link) and candidates for missing link prediction. Determine the most useful features for the model, potentially making coefficients for the negative likelihood score calculator.
-- Alfred: Will work on graph evaluation. Builds the test graph to compare the orignal graph and have a pipeline in place. Use human traces to evaluate graph performance.
-
-## Questions for TAs
-
-- Is the model choice good?
-- What others features could be implemented ? 
-- Is our method for the Training/Validation samples and candidates choice for prediction a good approach or are there some other methods?
+- Demonstrated the expressiveness of article and description embeddings for link prediction.
+- Reduced mean lengths of human traces from 6.76 nodes to 6.65 nodes.
+- Reduced mean game duration by 2.5 seconds, and the longest game by over 9 hours!
