@@ -59,7 +59,28 @@ def create_graph(embedded_articles, df_links):
                 print(f"Article {article} or {link} couldn't be found")
 
     return G 
+def create_csv_for_map(G,df_categories,countries_map):
+    geography_articles = df_categories[df_categories['Category_Level_1'] == 'Geography']
+    geography_articles = geography_articles[['Article']]
+    countries_articles = df_categories[df_categories['Category_Level_1'] == 'Countries']
+    countries_articles = countries_articles[['Article']]
 
+    df_for_map = pd.merge(geography_articles, countries_articles, on="Article", how="inner")
+    df_for_map['Article'] = df_for_map['Article'].str.replace('_', ' ')
+    df_for_map = df_for_map.drop_duplicates(subset=['Article'])
+    degrees = dict(G.degree())  # Dictionnary {Article: Degree}
+    # Add  "Node Degree" in df_for_map
+    df_for_map['Node Degree'] = df_for_map['Article'].map(degrees)
+    
+    countries_map = countries_map.drop(columns= "Population (2019)")
+
+    df_for_map = pd.merge(countries_map, df_for_map, 
+                             left_on="Name", right_on="Article", 
+                              how="left")
+    df_for_map = df_for_map.drop(columns="Article")
+
+    df_for_map.to_csv('./csv_for_map.csv', index=False)
+    
 def add_edges_from_csv(G, linked_nodes):
     """
     Adds edges to the graph G based on a CSV containing Source and Target articles.

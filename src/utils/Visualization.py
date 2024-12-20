@@ -546,7 +546,123 @@ def analyze_graph_statistics(G):
     print(f"Network density: {density:.4f}")
     print(f"Clustering coefficient: {clustering_coeff:.4f}")
     print(f"Average Shortest path: {avg_path_length:.4f}")
-    
+def Visualization_categories_distribution_premodel(df_links_,df_categories):
+    df_links_source=df_links_.copy()
+    df_links_source = df_links_source.merge(df_categories[['Article', 'Category_Level_1']], 
+                            left_on='Source', right_on='Article', how='left')
+
+    # Rename Source categories
+    df_links_source = df_links_source.rename(columns={
+        'Category_Level_1': 'Source_Category_1',
+    })
+    df_links_target=df_links_.copy()
+    # Merge categories for the Target nodes
+    df_links_target = df_links_target.merge(df_categories[['Article', 'Category_Level_1']], 
+                            left_on='Target', right_on='Article', how='left')
+
+    # Rename Target categories
+    df_links_target = df_links_target.rename(columns={
+        'Category_Level_1': 'Target_Category_1',
+    })
+
+    # Combine all categories (Source and Target) into one column
+    source_columns = ['Source_Category_1']
+    target_columns = ['Target_Category_1']
+
+    source_categories = pd.concat([df_links_source[col] for col in source_columns], ignore_index=True)
+    target_categories = pd.concat([df_links_target[col] for col in target_columns], ignore_index=True)
+    all_categories = pd.concat([source_categories,target_categories])
+
+    # Count the frequency of categories 
+    category_counts = all_categories.value_counts().reset_index()
+    category_counts.columns = ['Category', 'Frequency']
+    source_category_counts = source_categories.value_counts().reset_index()[:10]
+    source_category_counts.columns = ['Category', 'Frequency']
+    target_category_counts = target_categories.value_counts().reset_index()[:10]
+    target_category_counts.columns = ['Category', 'Frequency']
+
+    # Drop NaN values
+    #all_categories = all_categories.dropna()
+
+    # Create an interactive bar chart using Plotly
+    fig = px.bar(
+        category_counts,
+        x='Category',
+        y='Frequency',
+        title='Distribution of Categories of Graph Edges',
+        labels={'Frequency': 'Count', 'Category': 'Category'},
+        hover_data={'Category': True, 'Frequency': True},
+        text='Frequency',
+        color='Frequency',
+        color_continuous_scale=px.colors.sequential.Sunset
+    )
+
+    fig.update_traces(texttemplate='%{text}', textposition='outside')
+    fig.update_layout(
+        xaxis=dict(tickangle=45, title='Category'),
+        yaxis=dict(title='Frequency'),
+        template='plotly_dark',
+        title_font_size=20,
+        title_x=0.5,
+        margin=dict(l=50, r=50, t=80, b=150),
+        height=600,
+        width=1000
+    )
+    fig.show()
+
+    # Plot Source Category Distribution using Plotly
+    fig_source = px.bar(
+        source_category_counts,
+        x='Category',
+        y='Frequency',
+        title='Distribution of Categories for Source Nodes',
+        labels={'Frequency': 'Count', 'Category': 'Category'},
+        hover_data={'Category': True, 'Frequency': True},
+        text='Frequency',
+        color='Frequency',
+        color_continuous_scale=px.colors.sequential.Sunset
+    )
+
+    fig_source.update_traces(texttemplate='%{text}', textposition='outside')
+    fig_source.update_layout(
+        xaxis=dict(tickangle=45, title='Category'),
+        yaxis=dict(title='Frequency'),
+        template='plotly_dark',
+        title_font_size=20,
+        title_x=0.5,
+        margin=dict(l=50, r=50, t=80, b=150),
+        height=600,
+        width=1000
+    )
+    fig_source.show()
+
+    # Plot Target Category Distribution using Plotly
+    fig_target = px.bar(
+        target_category_counts,
+        x='Category',
+        y='Frequency',
+        title='Distribution of Categories for Target Nodes',
+        labels={'Frequency': 'Count', 'Category': 'Category'},
+        hover_data={'Category': True, 'Frequency': True},
+        text='Frequency',
+        color='Frequency',
+        color_continuous_scale=px.colors.sequential.Sunset
+    )
+
+    fig_target.update_traces(texttemplate='%{text}', textposition='outside')
+    fig_target.update_layout(
+        xaxis=dict(tickangle=45, title='Category'),
+        yaxis=dict(title='Frequency'),
+        template='plotly_dark',
+        title_font_size=20,
+        title_x=0.5,
+        margin=dict(l=50, r=50, t=80, b=150),
+        height=600,
+        width=1000
+    )
+    fig_target.show()
+
+
 def Visualization_post_model(df_links):
     # Create Graph from Predicted Links
     G = nx.from_pandas_edgelist(df_links, source="Source", target="Target", create_using=nx.DiGraph())
@@ -872,7 +988,7 @@ def visualization_pie_charts(df_links_, df_categories):
 
 def Visualization_error_bars(df_links_, df_categories):
     #Load the correct file
-    df_links_with_pred=pd.read_csv("linked_nodes_with_predictions_test.csv",sep=",")
+    df_links_with_pred=pd.read_csv(r"results\full_model\linked_nodes_with_predictions.csv",sep=",")
 
     # Merge categories for Source and Target nodes (consider all levels)
     df_links_with_pred = df_links_with_pred.merge(
@@ -899,18 +1015,18 @@ def Visualization_error_bars(df_links_, df_categories):
 
     # Combine all categories into a single column by creating DataFrames
     source_categories = df_links_with_pred[['Source_Category_1']].copy()
-    source_categories['Prediction_Correct'] = df_links_with_pred['Prediction'] == df_links_with_pred['Correct_Prediction']
+    source_categories['Correct_Label'] = df_links_with_pred['Prediction'] == df_links_with_pred['Correct_Label']
     source_categories = source_categories.rename(columns={'Source_Category_1': 'Category'})
 
     target_categories = df_links_with_pred[['Target_Category_1']].copy()
-    target_categories['Prediction_Correct'] = df_links_with_pred['Prediction'] == df_links_with_pred['Correct_Prediction']
+    target_categories['Correct_Label'] = df_links_with_pred['Prediction'] == df_links_with_pred['Correct_Label']
     target_categories = target_categories.rename(columns={'Target_Category_1': 'Category'})
 
     # Combine source and target categories
     all_categories = pd.concat([source_categories, target_categories], ignore_index=True)
 
     # Group by category and calculate the counts of correct and incorrect predictions
-    category_stats = all_categories.groupby('Category')['Prediction_Correct'] \
+    category_stats = all_categories.groupby('Category')['Correct_Label'] \
                                     .value_counts(normalize=False) \
                                     .unstack(fill_value=0)
 
@@ -921,7 +1037,9 @@ def Visualization_error_bars(df_links_, df_categories):
     top_categories = category_stats.sum(axis=1).nlargest(10).index
     category_stats_top = category_stats.loc[top_categories]
     category_stats_normalized_top = category_stats_top.div(category_stats_top.sum(axis=1), axis=0)
-
+    
+    #Export to csv
+    category_stats_normalized_top.to_csv("Data_error_bars.csv")
     # Plot as a horizontal bar chart
     fig, ax = plt.subplots(figsize=(10, 8))
     category_stats_normalized_top.sort_values(by=False, ascending=False).plot(
