@@ -576,7 +576,7 @@ def Visualization_post_model(df_links):
         yaxis=dict(range=[0, source_counts.head(10).values.max() + 1])  # Add space above bars
     )
 
-    fig_source.show()
+    fig_source.show("png")
 
     # Interactive Plot for Top 10 Targets
     fig_target = px.bar(
@@ -590,7 +590,7 @@ def Visualization_post_model(df_links):
     )
     fig_target.update_traces(texttemplate='%{text}', textposition='outside')
     fig_target.update_layout(xaxis=dict(tickangle=45))
-    fig_target.show()
+    fig_target.show("png")
 
     # 2. Degree Distribution
     print("Degree Distribution")
@@ -609,7 +609,7 @@ def Visualization_post_model(df_links):
         yaxis_title="Frequency",
         bargap=0.1
     )
-    fig_degree.show()
+    fig_degree.show("png")
 
     # 4. Graph Visualization
     print("Graph Visualization")
@@ -677,7 +677,7 @@ def Visualization_post_model(df_links):
                         ))
 
     # Show the interactive graph
-    fig_graph.show()
+    fig_graph.show("png")
     
 def Visualization_categories_distribution(df_links_,df_categories):
     df_links_source=df_links_.copy()
@@ -741,7 +741,7 @@ def Visualization_categories_distribution(df_links_,df_categories):
         height=600,
         width=1000
     )
-    fig.show()
+    fig.show("png")
 
     # Plot Source Category Distribution using Plotly
     fig_source = px.bar(
@@ -767,7 +767,7 @@ def Visualization_categories_distribution(df_links_,df_categories):
         height=600,
         width=1000
     )
-    fig_source.show()
+    fig_source.show("png")
 
     # Plot Target Category Distribution using Plotly
     fig_target = px.bar(
@@ -793,7 +793,7 @@ def Visualization_categories_distribution(df_links_,df_categories):
         height=600,
         width=1000
     )
-    fig_target.show()
+    fig_target.show("png")
 
 def visualization_pie_charts(df_links_, df_categories):
     df_links_pie=df_links_.copy()
@@ -868,7 +868,7 @@ def visualization_pie_charts(df_links_, df_categories):
         )
 
         # Show the pie chart
-        fig.show()
+        fig.show("png")
 
 def Visualization_error_bars(df_links_, df_categories):
     #Load the correct file
