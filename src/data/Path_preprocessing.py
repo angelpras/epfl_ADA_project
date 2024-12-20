@@ -220,7 +220,10 @@ def recalculate_num_pages_visited(df):
 
 
 def average_time_per_page(df):
-    
+    """
+    Calculates the mean time spent on a page by players based on
+    every game duration and total pages visited
+    """
     total_duration = df['duration'].sum()
     total_pages = df['num_pages_visited'].sum()
     average_time = total_duration / total_pages
@@ -228,9 +231,11 @@ def average_time_per_page(df):
     return average_time
 
 def redefine_duration(df, avg):
-    # Create a new column 'duration' in df_games based on num_pages_visited and average time per page
+    """
+    Correct the duration of every games in the cut dataset based on the mean time spent
+    on a page
+    """
     df['duration'] = df['num_pages_visited'] * avg
-    
     return df
 
 
