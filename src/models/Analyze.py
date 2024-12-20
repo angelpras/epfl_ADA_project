@@ -15,7 +15,7 @@ def parse_output_log(file_path):
                 val_losses.append(float(epoch_match.group(3)))
     return val_losses
 
-def plot_validation_loss_curves(results_dir, save=True):
+def plot_validation_loss_curves(results_dir):
     """Plot validation loss curves for all experiments on a single graph."""
     # Prepare the figure
     fig = go.Figure()
@@ -57,15 +57,13 @@ def plot_validation_loss_curves(results_dir, save=True):
         yaxis=dict(showgrid=True, gridcolor='gray')
     )
 
-    if not save:
-        fig.show()
-        return
     # Save the figure
     output_path = os.path.join(results_dir, "all_experiments_validation_loss.html")
     fig.write_html(output_path)
     print(f"Saved comparative validation loss curves at {output_path}")
+    return fig
 
-def plot_experiment_metrics(results_dir, save=True):
+def plot_experiment_metrics(results_dir):
     """Parse and plot performance metrics across experiments."""
     # Prepare to store metrics
     experiment_metrics = {}
@@ -162,14 +160,12 @@ def plot_experiment_metrics(results_dir, save=True):
         ),
         barmode='group'
     )
-    
-    if not save:
-        fig.show()
-        return
+
     # Save the figure
     output_path = os.path.join(results_dir, "experiment_metrics_comparison.html")
     fig.write_html(output_path)
     print(f"Saved metrics comparison plot at {output_path}")
+    return fig
 
 if __name__ == "__main__":
     # This script expects a directory path as a command-line argument
