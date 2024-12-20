@@ -219,6 +219,132 @@ def recalculate_num_pages_visited(df):
     return df
 
 
+def average_time_per_page(df):
+    
+    total_duration = df['duration'].sum()
+    total_pages = df['num_pages_visited'].sum()
+    average_time = total_duration / total_pages
+
+    return average_time
+
+def redefine_duration(df, avg):
+    # Create a new column 'duration' in df_games based on num_pages_visited and average time per page
+    df['duration'] = df['num_pages_visited'] * avg
+    
+    return df
 
 
+def compare_statistics(Original, New):
+    """
+    Compare statistics on wikispeedia metrics between two dataframes.
+    Prints the statistics of each dataframe and the differences between them.
+    """
+    
+    def print_stats(df, label):
+        print(f"Statistics for {label} Dataset:")
+        print("Mean length of paths:", df['num_pages_visited'].mean())
+        print("Mean Game duration:", df['duration'].mean(), "seconds")
+        print("Duration of longest game:", df['duration'].max(), "seconds")
+        print("\n")
+    
+    # Print statistics for each dataframe
+    print_stats(Original, "Original")
+    print_stats(New, "New")
+
+    # Calculate and print differences between df1 and df2
+    print("Differences between Original and New datsets:")
+    print("Difference in mean length of paths:", Original['num_pages_visited'].mean() - New['num_pages_visited'].mean())
+    print("Difference in median path length:", Original['num_pages_visited'].median() - New['num_pages_visited'].median())
+    print("Difference in mean game duration:", Original['duration'].mean() - New['duration'].mean(), "seconds")
+    print("Difference in duration of longest game:", Original['duration'].max() - New['duration'].max(), "seconds")
+
+def compare_statistics_html(original, new, output_file="comparison_statistics.html"):
+    """
+    Compare statistics between two dataframes and save the result as a dark-themed HTML table.
+    
+    Parameters:
+    original (DataFrame): The original DataFrame.
+    new (DataFrame): The modified DataFrame.
+    output_file (str): The name of the HTML file to save.
+    """
+    # Compute statistics for both DataFrames
+    stats = {
+        "Metric": [
+            "Mean length of paths", 
+            "Mean Game duration", 
+            "Duration of longest game"
+        ],
+        "Original": [
+            original['num_pages_visited'].mean(), 
+            original['duration'].mean(), 
+            original['duration'].max()
+        ],
+        "New": [
+            new['num_pages_visited'].mean(), 
+            new['duration'].mean(), 
+            new['duration'].max()
+        ]
+    }
+
+    # Add differences to the stats dictionary
+    stats["Difference"] = [
+        stats["Original"][i] - stats["New"][i] for i in range(len(stats["Metric"]))
+    ]
+
+    # Create a DataFrame for statistics
+    stats_df = pd.DataFrame(stats)
+
+    # Convert to an HTML table with a dark theme
+    html_table = stats_df.to_html(index=False, classes="table table-bordered", justify="center")
+    
+    # Dark-themed styling
+    dark_theme = """
+    <style>
+        body {
+            background-color: #1e1e1e;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        h2 {
+            color: #ffffff;
+            text-align: center;
+        }
+        .table {
+            width: 80%;
+            margin: auto;
+            border-collapse: collapse;
+            color: #ffffff;
+        }
+        .table-bordered {
+            border: 1px solid #555555;
+        }
+        .table-bordered th, .table-bordered td {
+            border: 1px solid #555555;
+            padding: 10px;
+            text-align: center;
+        }
+        .table th {
+            background-color: #333333;
+        }
+        .table tr:nth-child(even) {
+            background-color: #2a2a2a;
+        }
+        .table tr:nth-child(odd) {
+            background-color: #1e1e1e;
+        }
+    </style>
+    """
+
+    # Save the HTML table to a file
+    with open(output_file, "w") as f:
+        f.write("<html><head>")
+        f.write(dark_theme)
+        f.write("</head><body>")
+        f.write("<h2>Comparison of Original and New Statistics</h2>")
+        f.write(html_table)
+        f.write("</body></html>")
+
+    print(f"Comparison statistics have been saved to {output_file} with a dark background.")
 
